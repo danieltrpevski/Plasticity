@@ -50,7 +50,7 @@ class Spine():
                 neck.insert('cadyn_nmda')
 
         neck.g_pas      =   1.25e-5
-        neck.e_pas      =   -85
+        neck.e_pas      =   -80
         if not p.with_diffusion:
             neck.taur_cadyn_nmda = p.tau_cadyn_nmda
 
@@ -85,7 +85,7 @@ class Spine():
                 head.insert('cadyn_nmda')
 
         head.g_pas      =   1.25e-5
-        head.e_pas      =   -85
+        head.e_pas      =   -80
         if not p.with_diffusion:
             head.depth_caldyn = 0.1
             head.depth_cadyn_nmda = 0.1

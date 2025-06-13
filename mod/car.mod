@@ -12,8 +12,8 @@ UNITS {
 
 NEURON {
     SUFFIX car
-    USEION ca READ cai, cao WRITE ica :VALENCE 2
-    RANGE pbar, ical
+    USEION car READ cari, caro WRITE icar VALENCE 2
+    RANGE pbar, icar
 }
 
 PARAMETER {
@@ -24,11 +24,10 @@ PARAMETER {
 
 ASSIGNED { 
     v (mV)
-    ica (mA/cm2)
-    eca (mV)
+    icar (mA/cm2)
     celsius (degC)
-    cai (mM)
-    cao (mM)
+    cari (mM)
+    caro (mM)
     minf
     mtau (ms)
     hinf
@@ -39,7 +38,7 @@ STATE { m h }
 
 BREAKPOINT {
     SOLVE states METHOD cnexp
-    ica = pbar*m*m*m*h*ghk(v, cai, cao)
+    icar = pbar*m*m*m*h*ghk(v, cari, caro)
 }
 
 INITIAL {

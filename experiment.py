@@ -121,7 +121,7 @@ class Experiment(object):
                 syn.nc[-1].weight[0] = p.weight
             elif syntype in ['adaptive_glutamate',
                              'adaptive_glutamate_test', 'glutamate_ica_nmda',
-                             'adaptive_glutamate_hom',
+                             'adaptive_glutamate_hom',  'adaptive_ahom_NMDA', 'adaptive_addhom_NMDA',
                              'glutamate_xor_test', 'adaptive_shom_AMPA_stp', 'adaptive_shom_NMDA_stp',
                              'generalized_rule', 'generalized_rule_dist', 'adaptive_AMPA', 'adaptive_NMDA',
                              'AMPA_test', 'NMDA_test', 'adaptive_hom_AMPA', 'adaptive_hom_NMDA',
@@ -130,7 +130,7 @@ class Experiment(object):
                              'adaptive_cshom_NMDA','adaptive_glutamate_cshom', 'adaptive_my_shom_NMDA',
                              'adaptive_sAMPA', 'adaptive_sNMDA', 'adaptive_sglutamate',
                              'NMDAe', 'adaptive_zahra_NMDA', 'adaptive_zahra_AMPA',
-                             'NMDAe_ica_nmda']:
+                             'NMDAe_ica_nmda', 'adaptive_hom_AMPA_fNMDA', 'adaptive2_inhexp2syn']:
                 syn.nc[-1].weight[0] = 1.0
             else:
                 print("Synapse model not available in connect_input_genetrator().")

@@ -85,7 +85,7 @@ PARAMETER {
 	Cdur	= 1.1	 (ms)		: transmitter duration (rising phase)
 	Alpha	= 4 (/ms /mM)	: forward (binding) rate (4)
 	Beta 	= 0.01   (/ms)   : backward (unbinding) rate
-	Erev	= 15	 (mV)		: reversal potential
+	Erev	= 0	 (mV)		: reversal potential
     	mg   = 1      (mM)           : external magnesium concentration
     	eta = 0.28 (/mV)
     	alpha = 0.072 (/mV)

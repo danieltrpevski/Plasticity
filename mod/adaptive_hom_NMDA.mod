@@ -69,6 +69,7 @@ NEURON {
 	NONSPECIFIC_CURRENT iNMDA
 	RANGE mg, Cmax, eta, alpha, nmda_ca_fraction
         POINTER dopamine, stimulus_flag
+        RANGE delta_t, tlast
 	RANGE thresh_LTP, thresh_LTD, learning_rate, w0, wmax, wmin, weight
 	RANGE learning_rate_w_LTP, learning_rate_w_LTD, thresh_LTP_min, thresh_LTP_0, learning_rate_thresh_LTP, thresh_LTD_min, thresh_LTD_0, learning_rate_thresh_LTD, LTD_thresh_factor, hthresh_LTP
 	RANGE ca_nmdai_max, cali_max, active_syn_flag, Cdur_init, Cdur_factor, last_dopamine
@@ -86,14 +87,14 @@ UNITS {
 }
 
 PARAMETER {
-	Cdur = 1.1               : transmitter duration (rising phase)
 	Cmax	= 1	 (mM)           : max transmitter concentration
+	Cdur = 1.1               : transmitter duration (rising phase)
 	Alpha	= 4 (/ms /mM)	: forward (binding) rate (4)
 	Beta 	= 0.01   (/ms)   : backward (unbinding) rate
 	Erev	= 0	 (mV)		: reversal potential
         mg   = 1      (mM)           : external magnesium concentration
         eta = 0.28 (/mV)
-        alpha = 0.072 (/mV)
+        alpha = 0.062 (/mV)
 	gmax = 1   (uS)
         nmda_ca_fraction = 0.175
 
@@ -117,6 +118,9 @@ PARAMETER {
         LTD_thresh_factor = 0.5
 	learning_rate_thresh_LTP = 0.005
 	learning_rate_thresh_LTD = 0.005
+	
+	delta_t = 0
+	tlast = 0
 }
 
 
@@ -150,6 +154,9 @@ INITIAL {
         thresh_LTP = thresh_LTP_0
         thresh_LTD = thresh_LTD_0
 	last_dopamine = 0
+		
+	tlast = 0
+	delta_t = 0
 }
 
 BREAKPOINT {
@@ -161,23 +168,29 @@ BREAKPOINT {
         :ica = nmda_ca_fraction * g * ghk(v, cai, cao)
         iNMDA = (1 - nmda_ca_fraction)*iNMDA
 	
+	delta_t = t - tlast
+	tlast = t
+	
         if (stimulus_flag == 1) {
         	ca_nmdai_max = max(cai, ca_nmdai_max)
         	cali_max = max(cali, cali_max)
 		last_dopamine = dopamine
         } else {
 	  if (last_dopamine == 1 && active_syn_flag == 1) {
-
-		  weight = weight + learning_rate_w_LTP * pind_LTP(ca_nmdai_max) * hind_LTP(ca_nmdai_max) * (wmax - weight)
-		  thresh_LTP = thresh_LTP + learning_rate_thresh_LTP * pind_LTP(ca_nmdai_max) * hind_LTP(ca_nmdai_max) *(ca_nmdai_max - thresh_LTP) 
-		  thresh_LTD = thresh_LTD + learning_rate_thresh_LTD * pind_LTP(ca_nmdai_max) * hind_LTP(ca_nmdai_max) *(cali_max - thresh_LTD)		  
+	  
+		  weight = weight + learning_rate_w_LTP * pind_LTP(ca_nmdai_max) * hind_LTP(ca_nmdai_max) * (wmax - weight) * delta_t
+		  thresh_LTP = thresh_LTP + learning_rate_thresh_LTP * pind_LTP(ca_nmdai_max) * (ca_nmdai_max - thresh_LTP) * delta_t
+		  thresh_LTD = thresh_LTD + learning_rate_thresh_LTD * pind_LTP(ca_nmdai_max) * (cali_max - thresh_LTD)	* delta_t	  
           } else if (last_dopamine == -1 && active_syn_flag == 1) {
-
-		  weight = weight - learning_rate_w_LTD * pind_LTD(cali_max) * (weight - wmin)
-		  thresh_LTP = thresh_LTP - learning_rate_thresh_LTP * pind_LTD(cali_max) * (thresh_LTP - max(ca_nmdai_max , thresh_LTP_min))
-		  thresh_LTD = thresh_LTD - learning_rate_thresh_LTD * pind_LTD(cali_max) * (thresh_LTD - max(cali_max*LTD_thresh_factor, thresh_LTD_min))
-
+          
+		  weight = weight - learning_rate_w_LTD * pind_LTD(cali_max) * (weight - wmin) * delta_t
+		  thresh_LTP = thresh_LTP - learning_rate_thresh_LTP * pind_LTD(cali_max) * (thresh_LTP - max(ca_nmdai_max , thresh_LTP_min)) * delta_t
+		  thresh_LTD = thresh_LTD - learning_rate_thresh_LTD * pind_LTD(cali_max) * (thresh_LTD - max(cali_max*LTD_thresh_factor, thresh_LTD_min)) * delta_t
           }
+          if (weight < wmin) { weight = wmin }
+	  if (thresh_LTP < thresh_LTP_min) { thresh_LTP = thresh_LTP_min }
+	  if (thresh_LTD < thresh_LTD_min) { thresh_LTD = thresh_LTD_min }
+	  
           last_dopamine = dopamine		
           reset_max()
         }
@@ -193,10 +206,7 @@ FUNCTION mgblock(v(mV)) {
         DEPEND mg
         FROM -140 TO 80 WITH 1000
 
-        : from Jahr & Stevens
-
-
-	 mgblock = 1 / (1 + mg * eta * exp(-alpha * v) )  :was 0.062, changed to 0.072 to get a better voltage-dependence of NMDA currents, july 2008, kiki
+	 mgblock = 1 / (1 + mg * eta * exp(-alpha * v) )
 
 }
 

@@ -14,14 +14,15 @@ step = 20.0
 record_step = 1
 record_step_v = 1
 record_step_PDC = 1000
-skip_first_x_ms = 100
+skip_first_x_ms = 0
 
-nrn_dots_per_1ms = 1.0/record_step
+nrn_dots_per_1ms = 1.0/record_step_v
 time_to_avg_over = 20 # in seconds
 
-simtime = 700
+simtime = 600
 training_mode = 'sub'
-
+connectivity = 'random'
+rnd_exptype = 'no_spillover'
 num_trials = 20
 NUMBER_OF_PROCESSES = 7
 
@@ -34,25 +35,14 @@ isyn_plateau_tau = 10
 e_esyn = 0
 e_gaba = -60
 erev_NMDA = 0
-erate = 1.2
-irate = 1.2
+erate = 0.4
+irate = 0.4
 pos = 0.05
 # NMDA parameters
-#Mg = 1.0
-#alpha = 0.072
-#eta = 0.28
-#
+
 Mg = 1.0
 alpha = 0.062
 eta = 0.381679389
-
-# Mg = 1.0
-# alpha = 0.086
-# eta = 0.4
-
-#Mg = 1.4
-#alpha = 0.099
-#eta = 1.0/12
 
 g_ramp_max = 0.000255
 nmda_ampa_ratio = 1
@@ -82,7 +72,8 @@ ampa_alpha = 12.5
 ampa_beta = 0.25
 nmda_alpha = 4
 nmda_beta = 0.01
-weight = 0.35
+nmda_Tmax = 0.005
+weight = 0.525
 Cdur = 1.1
 Cdur_pf = 50
 eCdur_init = 50
@@ -91,18 +82,20 @@ eCdur = eCdur_init + eCdur_factor*weight
 width = 0.05
 delay_exnmda = 5
 random_initial_weights = True
-start_weight = 0.3
-end_weight = 0.35
+start_weight = 0.5
+end_weight = 0.55
+random_inh_initial_weights = False
 distribution = 'uniform'
 
 deterministic_interval = 1
 net_con_interval = 0
 num_spikes = 3
+min_random_interval = 1
 
-exglu_weight = 0.37
-exglu_tau = simtime
+exglu_weight = weight
+exglu_tau = 1e6
 thresh_weight = 0.5
-thresh_syns = 20
+thresh_syns = 16
 exglu_norm_factor = 1/(thresh_syns*thresh_weight)*1/num_spikes
 
 tau1_NMDA = 2.76
@@ -115,6 +108,8 @@ tau2_inhexp2syn = 10
 tau_cadyn_nmda = 150
 tau_caldyn = 100
 tau_catdyn = 100
+tau_cadyn = 100
+tau_caint = 1000
 #-----------------------------------------#
 #      3. Synaptic input parameters       #
 #-----------------------------------------#
@@ -127,29 +122,25 @@ plateau_cluster_size_max = 41
 cluster_start_pos = 0.45
 cluster_end_pos = 0.60
 xor_input_window = 35
-xor_input_size = 30
+xor_input_size = 20
 syns_per_feature = 5
 
-pf_input_rate = 1
-pf_input_start = plateau_burst_start
-pf_input_window = 70
-pf_input_end = plateau_burst_end+pf_input_window
-pf_input_size = 10
-pf_num_spikes = 3
-pf_input_interval = 1
-
+xor_inh_size = 20
+inh_delay = 0
+num_inh_spikes = 5
 inhibitory_syn_rate = 105.0
-inhibitory_burst_start = 180
-inhibitory_burst_end = 230
+inhibitory_burst_start = 100
+inhibitory_burst_end = 200
 inhibitory_cluster_size = 5
 inh_cluster_start_pos = 0.45
 inh_cluster_end_pos = 0.60
+inh_input_window = 100
 
 distributed_input_rate = 1000.0/40
-distributed_input_start = 130
-distributed_input_end = 200
-distributed_input_size = 0
-distributed_input_window = 75
+distributed_input_start = 200
+distributed_input_end = 230
+distributed_input_size = 0#80
+distributed_input_window = 35#755
 correlated_distributed_inputs = False
 
 ramp_syn_rate = 100.0
@@ -194,9 +185,14 @@ plot_distributed_inputs = True
 # if distributed_input_size > 0:
 #     plot_distributed_inputs = True
 long_simulation = False
-training_set_size_per_group = 90
-training_set_size = training_set_size_per_group*4
-training_input_length = 30
+adaptive_timestep_integration = False
+absolute_integrator_tolerance = 1e-2
+
+training_set_size_per_group = 100
+num_different_stimuli = 2
+training_set_size = training_set_size_per_group*num_different_stimuli
+extra_training_inputs = num_different_stimuli*2
+training_input_length = xor_input_window
 first_training_input_start = 200
 time_to_reward = 400 - training_input_length
 reward_length = 20
@@ -208,31 +204,23 @@ window_error = 2
 record_step_thresh = session_length/2
 
 LTP_factor = 2.0
-LTD_factor = 0.1
-thresh_LTP = 0.003
+LTD_factor = 0.01
+thresh_LTP = 0.0004
 thresh_LTD = 0.0001
-hthresh_LTP = 0.035
+hthresh_LTP = 0.04
+thresh_LTP_min = 0.0004
 thresh_LTD_min = 0.0001
-thresh_LTP_min = 0.001
 LTD_thresh_factor = 1.0
 
-learning_rate_w_LTP = 0.025#0.5#0.01
-learning_rate_w_LTD = 0.025#3.5
+learning_rate_w_LTP = 0.85#0.5#0.01
+learning_rate_w_LTD = 0.85#3.5
 learning_rate_w_LTD_pf = 0#0.05
-learning_rate_thresh_LTP = 0.05#0.025
+learning_rate_thresh_LTP = 3.0#2.5
 learning_rate_thresh_LTPl = 0.0025*0.5
-learning_rate_thresh_LTD = 0.05#0.00035*4
+learning_rate_thresh_LTD = 3.0#2.5
 learning_rate_thresh_KD_LTD = 0.05
 lthresh_LTP_min = 0.01
 threshold_scale_factor = 1.0
-
-# learning_rate_w_LTP = 0#0.035
-# learning_rate_w_LTD = 0#0.035
-# learning_rate_w_LTD_pf = 0#0.05
-# learning_rate_thresh_LTP = 0#0.00035
-# learning_rate_thresh_LTD = 0#0.00035
-# learning_rate_thresh_KD_LTD = 0# 0.05
-# lthresh_LTP_min = 0.01
 
 n1 = 2#200
 n2 = 16#1000
@@ -245,24 +233,51 @@ n_LTD = 750
 KD_LTD_pf = 0.0001
 n_LTD_pf = 1000
 
+theta_inh_sf = 1e3
+caint0 = 0.0000
+theta_min_min_inh = theta_inh_sf*0.0002
+theta_min_inh = theta_inh_sf*0.0002#0.003
+theta_inh = theta_inh_sf*0.01#0.0004#0.016
+steepness_inh = 100000/theta_inh_sf
+weight_inh = 0.15
+learning_rate_inh = 0.05e-3#0.5e-3
+learning_rate_theta_inh = 0.2e-3
+start_inh_plasticity = 3000
+start_inh_plasticity_offset = 0
+inh_exptype = 'weights'
+
 random_weights = False
 read_input_config_from_file = False
 input_config_file = 'xor_inputs_to_dends.dat'#'xor_dense.dat'
 input_dends = [8, 15] #[3, 5, 8, 12, 15, 22, 26, 35, 41, 47, 53, 57]#
-id1 = [3, 5, 8, 12, 15, 22, 26, 47, 52]
-id2 = [3, 5, 8, 12, 15, 22, 26, 47, 52]
+id0 = [3, 5, 8, 12, 15, 22, 26, 18]
+id1 = [3, 5, 8, 12, 15, 22, 26, 52]
+id2 = [3, 5, 8, 12, 15, 22, 26, 52]
 id3 = [3, 5, 8, 12, 15, 22, 26, 4, 35]
-sp1 = [0.35, 0.55, 0.4, 0.35, 0.3, 0.3, 0.4, 0.4, 0.25]
-ep1 = [0.5, 0.7, 0.5, 0.45, 0.5, 0.45, 0.55, 0.6, 0.45]
-sp2 = [0.45, 0.65, 0.55, 0.5, 0.62, 0.5, 0.5, 0.7, 0.55]
-ep2 = [0.6, 0.8, 0.65, 0.6, 0.77, 0.65, 0.65, 0.9, 0.99]
+id4 = [3, 4, 8, 12, 28, 35, 36, 53]
+
+sp0 = [0.1, 0.28, 0.315, 0.25, 0.25, 0.15, 0.22, 0.75]
+ep0 = [0.25, 0.45, 0.4, 0.38, 0.3, 0.3, 0.35, 0.92]
+
+sp1 = [0.25, 0.45, 0.4, 0.35, 0.38, 0.3, 0.33, 0.25]
+ep1 = [0.4, 0.6, 0.5, 0.45, 0.55, 0.45, 0.45, 0.45]
+
+sp2 = [0.45, 0.65, 0.55, 0.5, 0.62, 0.5, 0.5, 0.55]
+ep2 = [0.6, 0.8, 0.65, 0.6, 0.77, 0.65, 0.65, 0.99]
+
 sp3 = [0.6, 0.8, 0.65, 0.6, 0.77, 0.65, 0.65, 0.60, 0.05]
 ep3 = [0.75, 0.95, 0.75, 0.7, 0.97, 0.85, 0.8, 0.75, 0.35]
+
+sp4 = [0.85, 0.85, 0.8, 0.78, 0.70, 0.65, 0.5, 0.80]
+ep4 = [0.99, 0.99, 0.9, 0.87, 0.99, 0.91, 0.99, 0.91]
+
 independent_dends = id1
 cluster_start_poss = sp1
 cluster_end_poss = ep1
+distal_dends = [2, 3, 4, 5, 8, 9, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 24, 26, 27, 28, 29, 33, 34, 35, 36, 37, 38, 40, 41, 44, 45, 46, 47, 48, 50, 51, 52, 53, 56]
+segment_length = 20
 
-simtime = first_training_input_start + (training_set_size)*session_length
+# simtime = first_training_input_start + (training_set_size+extra_training_inputs)*session_length
 #simtime = first_training_input_start + test_set_size*session_length
 #simtime = first_training_input_start + training_set_size*(training_input_length+
 #            time_to_reward + reward_length)
@@ -275,12 +290,12 @@ plot_diffusion = False
 Dca = 200
 Dbuff = 66
 kf_ca_nmda_calbindin = 28; kr_ca_nmda_calbindin = 0.7e-6*28
-kf_ca_nmda_CaMN = 100; kr_ca_nmda_CaMN = 1e-5
+kf_ca_nmda_CaMN = 100; kr_ca_nmda_CaMN = 1e-5*100
 kf_ca_nmda_CaMC = 6; kr_ca_nmda_CaMC = 1.5e-6*6
 kf_ca_nmda_fixed = 400; kr_ca_nmda_fixed = 100*400e-3
 
 kcat_pmca_soma = 85;
-kcat_pmca_dend = 5.0e3;
+kcat_pmca_dend = 5e3;
 kcat_pmca_spine = 0.6
 Kd_pmca = 0.3
 
@@ -289,14 +304,17 @@ ca_out0 = 1.0
 calbindin0 = 0.08
 camn0 = 0.015
 camc0 = 0.015
-fixed0 = 0.15
+fixed0 = 2.5
 #-----------------------------------#
-#      6.1. For XOR experiment      #
+#      7. Signling network      #
 #-----------------------------------#
-
+with_signaling_network = False
+plot_signaling_network = True
+record_step_molecules = 1000
 #-------------------------------------------------------#
 #      7. Miscellaneous and parameter dictionaries      #
 #-------------------------------------------------------#
 
 dends_per_plot = 1
 scale_conductance = 1000
+spike_threshold = -40

@@ -55,8 +55,8 @@ NEURON {
 	RANGE R, gmax, g, ina, Alpha, Beta, iAMPA
 	USEION na WRITE ina
 	NONSPECIFIC_CURRENT  iAMPA
-	USEION ca_nmda WRITE ica_nmda VALENCE 2
 	RANGE Cdur, Erev, Rinf, Rtau
+	USEION ca_nmda READ ica_nmda VALENCE 2
 }
 UNITS {
 	(nA) = (nanoamp)

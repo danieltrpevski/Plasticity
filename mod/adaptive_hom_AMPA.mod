@@ -67,11 +67,8 @@ UNITS {
 
 PARAMETER {
     Cmax	= 0.1	(mM)		: max transmitter concentration
-:	Cdur	= 0.3	(ms)		: transmitter duration (rising phase)
 	Cdur	= 1.1	(ms)		: transmitter duration (rising phase)
-:	Alpha	= 0.94	(/ms)	: forward (binding) rate
 	Alpha	= 1	(/ms)	: forward (binding) rate
-:	Beta	= 0.018	(/ms)		: backward (unbinding) rate
 	Beta	= 0.5 (/ms)		: backward (unbinding) rate
 	Erev	= 0	(mV)		:0 reversal potential
 	gmax    = 1  (uS)

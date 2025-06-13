@@ -16,11 +16,18 @@ class Synapse(object):
         self.source = None
         self.ref_var_ampa = None
         self.ref_var_nmda = None
+
+        self.ref_var_theta_inh = None
+        self.ref_var_theta_min_inh = None
+        self.ref_var_kernel_theta_min_inh = None
+
         self.ref_var_lthresh_LTP = None
         self.ref_var_hthresh_LTP = None
         self.ref_var_lthresh_LTD = None
+
         self.ref_var_cai_nmda = None
         self.ref_var_cali = None
+        self.ref_var_caint = None
         self.erec = None
         self.clustered_flag = False
         self.stim = []
