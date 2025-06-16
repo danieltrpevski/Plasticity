@@ -72,8 +72,8 @@ ampa_alpha = 12.5
 ampa_beta = 0.25
 nmda_alpha = 4
 nmda_beta = 0.01
-nmda_Tmax = 0.005
-weight = 0.525
+nmda_Tmax = 0.02
+weight = 0.325
 Cdur = 1.1
 Cdur_pf = 50
 eCdur_init = 50
@@ -82,8 +82,8 @@ eCdur = eCdur_init + eCdur_factor*weight
 width = 0.05
 delay_exnmda = 5
 random_initial_weights = True
-start_weight = 0.5
-end_weight = 0.55
+start_weight = 0.3
+end_weight = 0.35
 random_inh_initial_weights = False
 distribution = 'uniform'
 
@@ -95,7 +95,7 @@ min_random_interval = 1
 exglu_weight = weight
 exglu_tau = 1e6
 thresh_weight = 0.5
-thresh_syns = 16
+thresh_syns = 20
 exglu_norm_factor = 1/(thresh_syns*thresh_weight)*1/num_spikes
 
 tau1_NMDA = 2.76
@@ -271,9 +271,9 @@ ep3 = [0.75, 0.95, 0.75, 0.7, 0.97, 0.85, 0.8, 0.75, 0.35]
 sp4 = [0.85, 0.85, 0.8, 0.78, 0.70, 0.65, 0.5, 0.80]
 ep4 = [0.99, 0.99, 0.9, 0.87, 0.99, 0.91, 0.99, 0.91]
 
-independent_dends = id1
-cluster_start_poss = sp1
-cluster_end_poss = ep1
+independent_dends = id2
+cluster_start_poss = sp2
+cluster_end_poss = ep2
 distal_dends = [2, 3, 4, 5, 8, 9, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 24, 26, 27, 28, 29, 33, 34, 35, 36, 37, 38, 40, 41, 44, 45, 46, 47, 48, 50, 51, 52, 53, 56]
 segment_length = 20
 
@@ -304,7 +304,7 @@ ca_out0 = 1.0
 calbindin0 = 0.08
 camn0 = 0.015
 camc0 = 0.015
-fixed0 = 2.5
+fixed0 = 0.15
 #-----------------------------------#
 #      7. Signling network      #
 #-----------------------------------#

@@ -145,9 +145,11 @@ class Plasticity_Experiment(e.Experiment):
                 self.exglu[-1].refrac = p.session_length
 #                h.setpointer(h._ref_stimulus_flag, 'stimulus_flag', self.exglusec[-1].exglu)
             for num,loc in enumerate(syn_loc):
+                print("\n\nSyn_loc = ", syn_loc)
                 syn_step = 1.0/num_syns
                 cluster_start_pos = p.cluster_start_poss[p.independent_dends.index(loc)]
                 cluster_end_pos = p.cluster_end_poss[p.independent_dends.index(loc)]
+                print(cluster_start_pos, cluster_end_pos)
                 for i in range(0, num_syns):
 #                    pos = cluster_start_pos + (cluster_end_pos - cluster_start_pos)*i*syn_step
                     pos = cluster_end_pos - (cluster_end_pos - cluster_start_pos)*i*syn_step
@@ -180,11 +182,11 @@ class Plasticity_Experiment(e.Experiment):
                         if self.cell.spines != []:
                             spines = [s for s in self.cell.spines if s.parent == self.cell.dendlist[loc]]
                             spines[i].syn_on = 0
-                        # if not p.with_diffusion:
-                        #     syntype2 = 'NMDA_ica_nmda'; syntype3 = 'NMDAe_ica_nmda'
-                        # else:
-                        #     syntype2 = 'NMDA'; syntype3 = 'NMDAe'
-                        syntype2 = 'NMDA'; syntype3 = 'NMDAe'
+                        if not p.with_diffusion:
+                            syntype2 = 'NMDA_ica_nmda'; syntype3 = 'NMDAe_ica_nmda'
+                        else:
+                            syntype2 = 'NMDA'; syntype3 = 'NMDAe'
+                        # syntype2 = 'NMDA'; syntype3 = 'NMDAe'
                         syn2 = self.cell.insert_synapse(syntype2, self.cell.dendlist[loc], pos,
                                                    add_spine = 0, on_spine = 1)
                         self.connect_input_generator(syn2, syntype2, syn1.stim[-1])
