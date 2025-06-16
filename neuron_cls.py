@@ -191,6 +191,7 @@ class Neuron(object):
             syn.obj.Cdur = p.Cdur
             if syntype in ['NMDA', 'NMDA_test', 'NMDA_stp', 'NMDA_ica_nmda']:
                 syn.obj.gmax = p.gmaxNMDA_spillover
+                syn.obj.Cmax = p.nmda_Tmax
             elif syntype in ['NMDA_pf']:
                 syn.obj.gmax = p.gmaxNMDA_pf
             elif syntype in ['NMDAe', 'NMDAe_ica_nmda']:
@@ -198,8 +199,8 @@ class Neuron(object):
                 syn.obj.Cdur_init = p.eCdur_init
                 syn.obj.Cdur_factor = p.eCdur_factor
                 syn.obj.weight = p.exglu_weight
-            if syntype in ['NMDA']:
-                syn.obj.Cmax = p.nmda_Tmax
+                syn.obj.Cmax = p.nmda_Tmax_spillover
+
             syn.obj.Alpha = p.nmda_alpha
             syn.obj.Beta = p.nmda_beta
             syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
@@ -306,6 +307,7 @@ class Neuron(object):
             syn.obj.Cdur_init = p.eCdur_init
             syn.obj.Cdur_factor = p.eCdur_factor
             syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
+            syn.obj.Cmax = p.nmda_Tmax_spillover
 
             self.esyn.append(syn)
             return syn
@@ -347,7 +349,8 @@ class Neuron(object):
            syn.obj.Beta = p.nmda_beta
            syn.obj.Cdur = p.Cdur
            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
-
+           syn.obj.Cmax = p.nmda_Tmax
+           
            syn.obj.w0 = p.weight
            syn.obj.wmax = p.weight*p.LTP_factor
            syn.obj.wmin = p.weight*p.LTD_factor
