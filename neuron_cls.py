@@ -186,9 +186,15 @@ class Neuron(object):
                 syn.obj = h.NMDA_ica_nmda(sec(pos))
             elif syntype ==  'NMDAe_ica_nmda':
                 syn.obj = h.NMDAe_ica_nmda(sec(pos))
+
             syn.obj.eta = p.eta
             syn.obj.alpha = p.alpha
             syn.obj.Cdur = p.Cdur
+            syn.obj.Erev = p.erev_NMDA
+            syn.obj.Alpha = p.nmda_alpha
+            syn.obj.Beta = p.nmda_beta
+            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
+
             if syntype in ['NMDA', 'NMDA_test', 'NMDA_stp', 'NMDA_ica_nmda']:
                 syn.obj.gmax = p.gmaxNMDA_spillover
                 syn.obj.Cmax = p.nmda_Tmax
@@ -201,10 +207,6 @@ class Neuron(object):
                 syn.obj.weight = p.exglu_weight
                 syn.obj.Cmax = p.nmda_Tmax_spillover
 
-            syn.obj.Alpha = p.nmda_alpha
-            syn.obj.Beta = p.nmda_beta
-            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
-            syn.obj.Erev = p.erev_NMDA
             if syntype == 'NMDA_test':
                 syn.obj.weight = p.weight
 
@@ -253,6 +255,8 @@ class Neuron(object):
             syn.obj.Beta = p.nmda_beta
             syn.obj.Cdur = p.Cdur
             syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
+            syn.obj.Erev = p.erev_NMDA
+            syn.obj.Cmax = p.nmda_Tmax
 
             syn.obj.w0 = p.weight
             syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
@@ -282,6 +286,8 @@ class Neuron(object):
             syn.obj.Beta = p.Beta
             syn.obj.Cdur = p.Cdur_pf
             syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
+            syn.obj.Erev = p.erev_NMDA
+            syn.obj.Cmax = p.nmda_Tmax
 
             syn.obj.w0 = p.weight
             syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
@@ -301,13 +307,13 @@ class Neuron(object):
             syn.obj.alpha = p.alpha
             syn.obj.Erev = p.erev_NMDA
             syn.obj.gmax = p.gmaxNMDAe_spillover
+            syn.obj.Cmax = p.nmda_Tmax_spillover
             syn.obj.Alpha = p.nmda_alpha
             syn.obj.Beta = p.nmda_beta
             syn.obj.Cdur = p.eCdur
             syn.obj.Cdur_init = p.eCdur_init
             syn.obj.Cdur_factor = p.eCdur_factor
             syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
-            syn.obj.Cmax = p.nmda_Tmax_spillover
 
             self.esyn.append(syn)
             return syn
@@ -350,7 +356,7 @@ class Neuron(object):
            syn.obj.Cdur = p.Cdur
            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
            syn.obj.Cmax = p.nmda_Tmax
-           
+
            syn.obj.w0 = p.weight
            syn.obj.wmax = p.weight*p.LTP_factor
            syn.obj.wmin = p.weight*p.LTD_factor
@@ -381,6 +387,7 @@ class Neuron(object):
            syn.obj.Beta = p.nmda_beta
            syn.obj.Cdur = p.Cdur
            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
+           syn.obj.Cmax = p.nmda_Tmax
 
            syn.obj.w0 = p.weight
            syn.obj.wmax = p.weight*p.LTP_factor
@@ -412,6 +419,7 @@ class Neuron(object):
            syn.obj.Beta = p.nmda_beta
            syn.obj.Cdur = p.Cdur
            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
+           syn.obj.Cmax = p.nmda_Tmax
 
            syn.obj.w0 = p.weight
            syn.obj.wmax = p.weight*p.LTP_factor
@@ -438,6 +446,8 @@ class Neuron(object):
            syn.obj.Alpha = p.ampa_alpha
            syn.obj.Beta = p.ampa_beta
            syn.obj.Cdur = p.Cdur
+           syn.obj.Erev = p.erev_NMDA
+           syn.obj.Cmax = p.nmda_Tmax
 
            syn.obj.w0 = p.weight
            syn.obj.wmax = p.weight*p.LTP_factor
@@ -467,6 +477,7 @@ class Neuron(object):
            syn.obj.Beta = p.Beta
            syn.obj.Cdur = p.Cdur
            syn.obj.Erev = p.erev_NMDA
+           syn.obj.Cmax = p.nmda_Tmax
 
            syn.obj.w0 = p.weight
            syn.obj.rate_ltp = 0.00004
@@ -489,6 +500,7 @@ class Neuron(object):
            syn.obj.n = p.Hill_coefficient
            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
            syn.obj.Erev = p.erev_NMDA
+           syn.obj.Cmax = p.nmda_Tmax
 
            syn.obj.width = p.width
            syn.obj.w0 = p.weight
