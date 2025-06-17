@@ -73,7 +73,7 @@ ampa_beta = 0.25
 nmda_alpha = 4
 nmda_beta = 0.01
 nmda_Tmax = 1.0
-nmda_Tmax_spillover = 0.02
+nmda_Tmax_spillover = 0.2
 weight = 0.325
 Cdur = 1.1
 Cdur_pf = 50
@@ -305,7 +305,7 @@ ca_out0 = 1.0
 calbindin0 = 0.08
 camn0 = 0.015
 camc0 = 0.015
-fixed0 = 2.5
+fixed0 = 0.15
 #-----------------------------------#
 #      7. Signling network      #
 #-----------------------------------#
