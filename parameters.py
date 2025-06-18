@@ -34,7 +34,7 @@ isyn_tau = 6
 isyn_plateau_tau = 10
 e_esyn = 0
 e_gaba = -60
-erev_NMDA = 0
+erev_NMDA = 15
 erate = 0.4
 irate = 0.4
 pos = 0.05
@@ -208,7 +208,7 @@ LTP_factor = 2.0
 LTD_factor = 0.01
 thresh_LTP = 0.0004
 thresh_LTD = 0.0001
-hthresh_LTP = 0.04
+hthresh_LTP = 0.1
 thresh_LTP_min = 0.0004
 thresh_LTD_min = 0.0001
 LTD_thresh_factor = 1.0
@@ -272,13 +272,13 @@ ep3 = [0.75, 0.95, 0.75, 0.7, 0.97, 0.85, 0.8, 0.75, 0.35]
 sp4 = [0.85, 0.85, 0.8, 0.78, 0.70, 0.65, 0.5, 0.80]
 ep4 = [0.99, 0.99, 0.9, 0.87, 0.99, 0.91, 0.99, 0.91]
 
-independent_dends = id2
-cluster_start_poss = sp2
-cluster_end_poss = ep2
+independent_dends = id1
+cluster_start_poss = sp1
+cluster_end_poss = ep1
 distal_dends = [2, 3, 4, 5, 8, 9, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 24, 26, 27, 28, 29, 33, 34, 35, 36, 37, 38, 40, 41, 44, 45, 46, 47, 48, 50, 51, 52, 53, 56]
 segment_length = 20
 
-# simtime = first_training_input_start + (training_set_size+extra_training_inputs)*session_length
+simtime = first_training_input_start + (training_set_size+extra_training_inputs)*session_length
 #simtime = first_training_input_start + test_set_size*session_length
 #simtime = first_training_input_start + training_set_size*(training_input_length+
 #            time_to_reward + reward_length)
@@ -301,7 +301,7 @@ kcat_pmca_spine = 0.6
 Kd_pmca = 0.3
 
 ca_in0 = 5e-5
-ca_out0 = 1.0
+ca_out0 = 2.0
 calbindin0 = 0.08
 camn0 = 0.015
 camc0 = 0.015
