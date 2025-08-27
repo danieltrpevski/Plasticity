@@ -12,8 +12,8 @@ UNITS {
 
 NEURON {
     SUFFIX caq
-    USEION caq READ caqi, caqo WRITE icaq VALENCE 2
-    RANGE pbar, icaq
+    USEION ca READ cai, cao WRITE ica VALENCE 2
+    RANGE pbar, ica
 }
 
 PARAMETER {
@@ -24,10 +24,10 @@ PARAMETER {
 
 ASSIGNED { 
     v (mV)
-    icaq (mA/cm2)
+    ica (mA/cm2)
     celsius (degC)
-    caqi (mM)
-    caqo (mM)
+    cai (mM)
+    cao (mM)
     minf
     mtau (ms)
 }
@@ -36,7 +36,7 @@ STATE { m }
 
 BREAKPOINT {
     SOLVE states METHOD cnexp
-    icaq = pbar*m*m*ghk(v, caqi, caqo)
+    ica = pbar*m*m*ghk(v, cai, cao)
 }
 
 INITIAL {

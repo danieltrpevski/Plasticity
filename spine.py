@@ -78,7 +78,6 @@ class Spine():
                         'cal13',    \
                         'caldyn']:
 
-
             head.insert(mech)
             if not p.with_diffusion:
                 head.insert('cadyn')

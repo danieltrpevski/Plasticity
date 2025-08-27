@@ -264,6 +264,11 @@ class MSN(n.Neuron):
 
         return distal_ind, proximal_ind, middle_ind
 
+    def get_dend_proportions(self, dendlist):
+        dend_lengths = [h.distance(1, sec = self.dendlist[d]) - h.distance(0, sec = self.dendlist[d]) for d in dendlist]
+        dend_proportions = np.asarray(dend_lengths)/sum(dend_lengths)
+
+        return dend_proportions
 
     def insert_spines(self, section_list, start_pos, end_pos, num_spines = 20):
         spine_step = 1.0/num_spines
@@ -276,11 +281,13 @@ class MSN(n.Neuron):
                 self.spines[-1].attach(self.dendlist[sec], pos, 0)
 
     def delete_spines(self):
-        while self.spines != []:
-            for s in self.spines:
-                s.head = None
-                s.neck = None
-                self.spines.remove(s)
+        for s in self.spines:
+            s.head.disconnect()
+            s.neck.disconnect()
+            h.delete_section(sec = s.head)
+            h.delete_section(sec = s.neck)
+
+        self.spines.clear()
         self.num_spines_on_dends = np.zeros(len(self.dendlist))
 
     def set_up_diffusion(self):
@@ -316,12 +323,40 @@ class MSN(n.Neuron):
             self.R_ca_CaMC = rxd.Reaction(self.ca + self.CaMC, self.ca_CaMC, p.kf_ca_nmda_CaMC, p.kr_ca_nmda_CaMC)
             self.R_ca_fixed = rxd.Reaction(self.ca + self.fixed, self.ca_fixed, p.kf_ca_nmda_fixed, p.kr_ca_nmda_fixed)
 
+            self.kcat_pmca_param = rxd.Parameter(self.membrane, initial=lambda node: (
+                p.kcat_pmca_soma if node.segment.sec in self.somalist else p.kcat_pmca_dend
+            ))
+
             self.ca_pump = rxd.MultiCompartmentReaction(self.ca[self.regions], self.ca_exc[self.exc],
-                                                   self.ca[self.regions] * p.kcat_pmca_dend/ (self.ca[self.regions]+ p.Kd_pmca),
+                                                    # lambda nodes_from, nodes_to: self.kc_PMCA(nodes_from, nodes_to),
+                                                    self.ca[self.regions] * self.kcat_pmca_param/ (self.ca[self.regions]+ p.Kd_pmca),
                                                     custom_dynamics=True,
                                                     membrane_flux=True,
                                                     membrane=self.membrane)
             self.diffusion_set = True
+
+    def kc_PMCA(nodes_from, nodes_to):
+        """
+        Return a list of forward rates for each node pair, spatially varying.
+        nodes_from: nodes inside the cell (self.ca[self.regions])
+        nodes_to: extracellular nodes (self.ca_exc[self.exc])
+        """
+        rates = []
+        for node_in, node_out in zip(nodes_from, nodes_to):
+            # Example: check normalized position along section:
+            xnorm = node_in.segment.x  # 0 at start, 1 at end of section
+
+            # Example: boost pump rate in soma and proximal dendrites
+            if node_in.segment.sec in self.somalist:
+                kcat = p.kcat_pmca_soma  # different rate constant for soma
+            else:
+                kcat = p.kcat_pmca_dend  # proximal dendrites
+
+            # Michaelis-Menten form:
+            ca_conc = node_in.concentration
+            rate = kcat / (ca_conc + p.Kd_pmca)
+            rates.append(rate)
+        return rates
 
     def print_diffusion(self):
         print(self.exc)

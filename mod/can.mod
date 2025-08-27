@@ -13,8 +13,8 @@ UNITS {
 NEURON {
     THREADSAFE
     SUFFIX can
-    USEION can READ cani, cano WRITE ican VALENCE 2
-    RANGE pbar, ican
+    USEION ca READ cai, cao WRITE ica VALENCE 2
+    RANGE pbar, ica
 }
 
 PARAMETER {
@@ -26,10 +26,10 @@ PARAMETER {
 
 ASSIGNED { 
     v (mV)
-    ican (mA/cm2)
+    ica (mA/cm2)
     celsius (degC)  
-    cani (mM)
-    cano (mM)
+    cai (mM)
+    cao (mM)
     minf
     mtau (ms)
     hinf
@@ -40,7 +40,7 @@ STATE { m h }
 
 BREAKPOINT {
     SOLVE states METHOD cnexp
-    ican = pbar*m*m*(h*a+1-a)*ghk(v, cani, cano)
+    ica = pbar*m*m*(h*a+1-a)*ghk(v, cai, cao)
 }
 
 INITIAL {

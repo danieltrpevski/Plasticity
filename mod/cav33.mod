@@ -12,7 +12,7 @@ UNITS {
 
 NEURON {
     SUFFIX cav33
-    USEION cav READ cavi, cavo WRITE icav VALENCE 2
+    USEION ca READ cai, cao WRITE ica VALENCE 2
     RANGE pbar, mvhalf, hvhalf, a, p, perm
 }
 
@@ -29,10 +29,10 @@ PARAMETER {
 
 ASSIGNED { 
     v (mV)
-    icav (mA/cm2)
+    ica (mA/cm2)
     celsius (degC)
-    cavi (mM)
-    cavo (mM)
+    cai (mM)
+    cao (mM)
     minf
     hinf
     mtau (ms)
@@ -47,7 +47,7 @@ STATE { m h }
 BREAKPOINT {
     SOLVE states METHOD cnexp
     perm = pbar*(m^p)*h
-    icav = ghk(v, cavi, cavo)*perm
+    ica = ghk(v, cai, cao)*perm
 }
 
 INITIAL {

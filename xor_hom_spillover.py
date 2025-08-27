@@ -41,7 +41,7 @@ for sec in cell.somalist:
 # --- 2. Insert stimulation to cell
 dendstatobj = ds.DendStat()
 dendstatobj.dends = p.input_dends
-dendstatobj.dend_inputs = [['r', 'y', 's' ], ['y', 'b', 's']]
+dendstatobj.dend_inputs = [['r', 's', 'y' ], ['y', 'b', 's']]
 dendstatobj.dend_syns = [[10, 10, 10], [10, 10, 10]]
 
 #dendstatobj.dend_inputs = [[2,3], [1,3,4], [2,4], [1,3]]
@@ -59,5 +59,5 @@ ex.set_up_experiment()
 ex.set_up_recording(p.input_dends)
 ex.simulate()
 #ex.gmax_derivs()
-ex.plot_results()
+# ex.plot_results()
 #ex.save_syn_weights(p.save_weights_file)

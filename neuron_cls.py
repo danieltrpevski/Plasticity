@@ -66,7 +66,6 @@ class Neuron(object):
 
         if on_spine:
             empty_spines = [spine for spine in self.spines if (spine.parent == sec and spine.syn_on == 0)]
-
             if empty_spines == []:
                 print("There are no empty spines on dendrite %s" % sec.name())
                 sys.exit(-1)

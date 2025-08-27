@@ -57,11 +57,11 @@ for sec in cell.somalist:
 # --- 2. Insert stimulation to cell
 
 #independent_dends = [3, 5, 8, 12, 15, 22, 26, 35, 41, 47, 53, 57]
-dend_record_list = [22] #[3,4,9,10,21,22,24,26,35,36,51,52]
+dend_record_list = [3] #[3,4,9,10,21,22,24,26,35,36,51,52]
 dend_stim_list = []#[3,4,9,10,35,36]
-plateau_cluster_list = [22]
+plateau_cluster_list = [3]
 
-plateau_cluster_size = np.arange(1,21,1)
+plateau_cluster_size = np.arange(1,19,1)
 
 vs = []
 vspine = []
@@ -86,8 +86,8 @@ max_cati = []
 g_nmda = []
 i_nmda = []
 
-sns.set(font_scale = 1.0)
-sns.set_style('whitegrid')
+sns.set(font_scale = 2.0)
+sns.set_style('ticks')
 fig_vs = plt.figure();
 fig_vspine = plt.figure();
 fig_vd = plt.figure();
@@ -97,10 +97,11 @@ fig_cati = plt.figure();
 #fig_ical = plt.figure();
 fig_cali_dend = plt.figure();
 #fig_cati_dend = plt.figure();
-fig_cai_nmda_spine = plt.figure();
+fig_cai_nmda_spine = plt.figure(figsize = (5, 3.5));
 fig_cai_cali_spine = plt.figure();
 fig_cai_cati_spine = plt.figure();
 fig_ica_nmda = plt.figure();
+fig_cai_total_spine = plt.figure(figsize = (5, 3.5));
 
 ax_vs = fig_vs.add_subplot(111); ax_vs.set_ylabel('Vs (mV)'); ax_vs.set_xlabel('t (ms)')
 ax_vspine = fig_vspine.add_subplot(111); ax_vspine.set_ylabel('Vspine (mV)'); ax_vspine.set_xlabel('t (ms)')
@@ -109,27 +110,31 @@ ax_cai_nmda = fig_cai_nmda.add_subplot(111); ax_cai_nmda.set_ylabel('Cai_nmda de
 ax_cali = fig_cali.add_subplot(111); ax_cali.set_ylabel('Cali spine(mM)'); ax_cali.set_xlabel('t (ms)')
 ax_cai = fig_cati.add_subplot(111); ax_cai.set_ylabel('Cai spine(mM)'); ax_cai.set_xlabel('t (ms)')
 #ax_ical = fig_ical.add_subplot(111); ax_ical.set_ylabel('Ical'); ax_ical.set_xlabel('t (ms)')
-ax_ica_nmda = fig_ica_nmda.add_subplot(111); ax_ica_nmda.set_ylabel('Ica_nmda'); ax_ica_nmda.set_xlabel('t (ms)')
+# ax_ica_nmda = fig_ica_nmda.add_subplot(111); ax_ica_nmda.set_ylabel('Ica_nmda'); ax_ica_nmda.set_xlabel('t (ms)')
 ax_cali_dend = fig_cali_dend.add_subplot(111); ax_cali_dend.set_ylabel('Cali_dend (mM)'); ax_cali_dend.set_xlabel('t (ms)')
 #ax_cati_dend = fig_cati_dend.add_subplot(111); ax_cati_dend.set_ylabel('Cati_dend (mM)'); ax_cati_dend.set_xlabel('t (ms)')
-ax_cai_nmda_spine = fig_cai_nmda_spine.add_subplot(111); ax_cai_nmda_spine.set_ylabel('Cai_nmda spine(mM)'); ax_cai_nmda_spine.set_xlabel('t (ms)')
+ax_cai_nmda_spine = fig_cai_nmda_spine.add_subplot(111); ax_cai_nmda_spine.set_ylabel('spine [Ca]$_\mathrm{NMDA}$ ($\mu$M)'); ax_cai_nmda_spine.set_xlabel('t (ms)')
 ax_cai_cali_spine = fig_cai_cali_spine.add_subplot(111); ax_cai_cali_spine.set_ylabel('Cai_nmda + cali spine(mM)'); ax_cai_cali_spine.set_xlabel('t (ms)')
 ax_cai_cati_spine = fig_cai_cati_spine.add_subplot(111); ax_cai_cati_spine.set_ylabel('Cai_nmda + cati spine(mM)'); ax_cai_cati_spine.set_xlabel('t (ms)')
-colors = sns.color_palette("coolwarm", 21)
+ax_cai_total_spine = fig_cai_total_spine.add_subplot(111); ax_cai_total_spine.set_ylabel('spine [Ca]$_\mathrm{NMDA}$ + [Ca]$_\mathrm{VGCC}$ ($\mu$M)'); ax_cai_total_spine.set_xlabel('t (ms)')
+colors = sns.color_palette("icefire", 30)
 
 add_spine = 0
 on_spine = 1
 
-cell.insert_spines(plateau_cluster_list, p.cluster_start_pos, p.cluster_end_pos, num_spines = p.plateau_cluster_size_max)
+start_pos = p.cluster_start_poss[p.independent_dends.index(plateau_cluster_list[0])]
+end_pos = p.cluster_end_poss[p.independent_dends.index(plateau_cluster_list[0])]
+cell.insert_spines(plateau_cluster_list, start_pos, end_pos, num_spines = p.plateau_cluster_size_max)
 
 #cell.dendlist[57].diam = 0.3
 sns.set_style("ticks")
+ci = 0
 for num_syns in plateau_cluster_size:
 #for num_syns in [5,6,10,12]:
 #    cell = msn.MSN(variables = variables)
     ex = pe.Plasticity_Experiment('record_ca', cell)
-    ex.insert_synapses('MSN')
-    ex.insert_synapses('my_spillover', plateau_cluster_list, deterministic = 0,
+    # ex.insert_synapses('MSN')
+    ex.insert_synapses('no_spillover', plateau_cluster_list, deterministic = 0,
                        num_syns = num_syns, add_spine = add_spine, on_spine = on_spine)
 #    ex.insert_synapses('input_syn', deterministic = 1,
 #                       num_syns = p.distributed_input_size*2, add_spine = 0, on_spine = 0)
@@ -148,9 +153,9 @@ for num_syns in plateau_cluster_size:
     if add_spine == 1 or on_spine == 1:
         vspine.append(ex.vspine[0].to_python())
         max_vspine.append(max(ex.vspine[0]))
-        ax_vspine.plot(tv, ex.vspine[0].to_python(), color = colors[num_syns-1])
-        ax_ica_nmda.plot(tv, ex.ica_nmda[0].to_python(), color = colors[num_syns-1])
-
+        ax_vspine.plot(tv, ex.vspine[0].to_python(), color = colors[ci])
+        # ax_ica_nmda.plot(tv, ex.ica_nmda[0].to_python(), color = colors[ci])
+    ci = ci +1
     vd.append(ex.vdlist[0].to_python())
     max_vd.append(max(ex.vdlist[0]))
 
@@ -214,7 +219,8 @@ for i in range(0, len(cai_nmda)):
 #    ax_vd.hlines(*(vd_widths[i])[1:])
     # ax_cali_dend.plot(t, cali_dend[i], color = colors[i])
     if not p.with_diffusion:
-        ax_cai_nmda_spine.plot(t, cai_nmda_spine_plot[i], color = colors[i])
+        ax_cai_nmda_spine.plot(t, 1000*np.asarray(cai_nmda_spine_plot[i]), color = colors[i])
+        ax_cai_total_spine.plot(t, 1000*(np.asarray(cai_nmda_spine_plot[i]) + np.asarray(cai_spine_plot[i])), color = colors[i])
     # ax_cai_cali_spine.plot(t, np.add(np.add(cai_nmda_spine_plot[i] , cali_spine_plot[i]), cai_spine_plot[i]), color = colors[i])
 #    ax_cai_cati_spine.plot(t, np.add(cai_nmda_spine_plot[i] , cati_spine_plot[i]), color = colors[i])
 ax_vd.set_title("weight = %.2f, Cdur_factor = %d" % (p.weight, p.eCdur_factor))
@@ -229,8 +235,8 @@ res_dict = {'t': t,
             'cai_nmda_spine': cai_nmda_spine_plot,
             'cali_spine': cali_spine_plot}
 to_save = json.dumps(res_dict)
-#filename = './results/data_spillover_steep.dat'
-#with open(filename,'w', encoding = 'utf-8') as f:
+# filename = './results/data_spillover_steep.dat'
+# with open(filename,'w', encoding = 'utf-8') as f:
 #    json.dump(to_save, f)
 
 #ax_vs.legend(legend)

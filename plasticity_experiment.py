@@ -60,35 +60,21 @@ class Plasticity_Experiment(e.Experiment):
                 self.add_input_generator(syn, syntype)
 
         elif syntype == 'input_syn':
-            syn_loc = []
             for i in range(0, num_syns):
-                syn_loc.append([rnd.randint(0, len(self.cell.dendlist)-1), rnd.uniform(0,1)])
+                empty_spines = [s for s in self.cell.spines if s.syn_on == 0]
+                sec = empty_spines[0].parent
+                pos = empty_spines[0].pos
+                syn1 = self.cell.insert_synapse('AMPA', sec, pos, add_spine = add_spine, on_spine = on_spine)
+                self.add_input_generator(syn1, 'AMPA', deterministic = deterministic)
 
-            if deterministic == 1:
-                spike_time = []
-                for i in range(0, len(syn_loc)):
-                    spike_time.append(rnd.uniform(p.distributed_input_start, p.distributed_input_end))
-
-            counter = 0
-            for loc in syn_loc:
-                counter += 1
-                syn1 = self.cell.insert_synapse('AMPA', self.cell.dendlist[loc[0]], loc[1],
-                           add_spine = 0, on_spine = 0)
                 if not p.with_diffusion:
                     syntype = 'NMDA_ica_nmda'
                 else:
                     syntype = 'NMDA'
-                syn2 = self.cell.insert_synapse(syntype, self.cell.dendlist[loc[0]], loc[1],
-                                           add_spine = 0, on_spine = 0)
-#                 syn = self.cell.insert_synapse('glutamate', self.cell.dendlist[loc[0]], loc[1], add_spine = add_spine, on_spine = on_spine)
-                if deterministic == 1:
-#                    self.add_input_generator(syn, syntype, deterministic = deterministic, numsyn = counter, tstart = spike_time[counter-1])
-                    self.add_input_generator(syn1, 'AMPA', deterministic = deterministic, numsyn = counter, tstart = spike_time[counter-1])
-                    self.connect_input_generator(syn2, syntype, syn1.stim[-1])
-                else:
-#                    self.add_input_generator(syn, syntype, deterministic = deterministic, numsyn = counter)
-                    self.add_input_generator(syn1, 'AMPA', deterministic = deterministic, numsyn = counter)
-                    self.connect_input_generator(syn2, syntype, syn1.stim[-1])
+                full_spines = [spine for spine in self.cell.spines if spine.syn_on == 1]
+                full_spines[-1].syn_on = 0
+                syn2 = self.cell.insert_synapse('NMDA', sec, pos, add_spine = add_spine, on_spine = on_spine)
+                self.connect_input_generator(syn2, 'NMDA', syn1.stim[-1])
 
         elif syntype == 'ramp':
             for loc in syn_loc:
@@ -145,11 +131,9 @@ class Plasticity_Experiment(e.Experiment):
                 self.exglu[-1].refrac = p.session_length
 #                h.setpointer(h._ref_stimulus_flag, 'stimulus_flag', self.exglusec[-1].exglu)
             for num,loc in enumerate(syn_loc):
-                print("\n\nSyn_loc = ", syn_loc)
                 syn_step = 1.0/num_syns
                 cluster_start_pos = p.cluster_start_poss[p.independent_dends.index(loc)]
                 cluster_end_pos = p.cluster_end_poss[p.independent_dends.index(loc)]
-                print(cluster_start_pos, cluster_end_pos)
                 for i in range(0, num_syns):
 #                    pos = cluster_start_pos + (cluster_end_pos - cluster_start_pos)*i*syn_step
                     pos = cluster_end_pos - (cluster_end_pos - cluster_start_pos)*i*syn_step
@@ -168,7 +152,7 @@ class Plasticity_Experiment(e.Experiment):
                                         'my_spillover_stp']):
                         syn = self.cell.insert_synapse(syntype, self.cell.dendlist[loc],
                                                        pos, add_spine = add_spine, on_spine = on_spine)
-                        self.add_input_generator(syn, syntype, deterministic = deterministic, numsyn = i, tstart = start)
+                        self.add_input_generator(syn, syntype, deterministic = deterministic, tstart = start)
                         if syntype == 'generalized_rule':
                             h.setpointer(h._ref_dopamine, 'dopamine', syn.obj)
                             h.setpointer(h._ref_stimulus_flag, 'stimulus_flag', syn.obj)
@@ -178,7 +162,7 @@ class Plasticity_Experiment(e.Experiment):
                     elif syntype in ['spillover_test', 'my_spillover']:
                         syn1 = self.cell.insert_synapse('AMPA', self.cell.dendlist[loc], pos,
                                                    add_spine = add_spine, on_spine = on_spine)
-                        self.add_input_generator(syn1, 'AMPA', deterministic = deterministic, numsyn = i, tstart = start)
+                        self.add_input_generator(syn1, 'AMPA', deterministic = deterministic, tstart = start)
                         if self.cell.spines != []:
                             spines = [s for s in self.cell.spines if s.parent == self.cell.dendlist[loc]]
                             spines[i].syn_on = 0
@@ -203,7 +187,7 @@ class Plasticity_Experiment(e.Experiment):
                     elif syntype in ['my_spillover_stp']:
                         syn1 = self.cell.insert_synapse('AMPA_stp', self.cell.dendlist[loc], pos,
                                                    add_spine = add_spine, on_spine = on_spine)
-                        self.add_input_generator(syn1, 'AMPA_stp', deterministic = deterministic, numsyn = i, tstart = start)
+                        self.add_input_generator(syn1, 'AMPA_stp', deterministic = deterministic, tstart = start)
                         if self.cell.spines != []:
                             spines = [s for s in self.cell.spines if s.parent == self.cell.dendlist[loc]]
                             spines[i].syn_on = 0
@@ -220,7 +204,7 @@ class Plasticity_Experiment(e.Experiment):
                     elif syntype == 'no_spillover':
                         syn1 = self.cell.insert_synapse('AMPA', self.cell.dendlist[loc], pos,
                                                    add_spine = add_spine, on_spine = on_spine)
-                        self.add_input_generator(syn1, 'AMPA', deterministic = deterministic, numsyn = i, tstart = start)
+                        self.add_input_generator(syn1, 'AMPA', deterministic = deterministic, tstart = start)
                         if self.cell.spines != []:
                             spines = [s for s in self.cell.spines if s.parent == self.cell.dendlist[loc]]
                             spines[i].syn_on = 0
@@ -232,7 +216,7 @@ class Plasticity_Experiment(e.Experiment):
                     elif syntype == 'no_spillover_stp':
                         syn1 = self.cell.insert_synapse('AMPA_stp', self.cell.dendlist[loc], pos,
                                                    add_spine = add_spine, on_spine = on_spine)
-                        self.add_input_generator(syn1, 'AMPA_stp', deterministic = deterministic, numsyn = i, tstart = start)
+                        self.add_input_generator(syn1, 'AMPA_stp', deterministic = deterministic, tstart = start)
                         if self.cell.spines != []:
                             spines = [s for s in self.cell.spines if s.parent == self.cell.dendlist[loc]]
                             spines[i].syn_on = 0
@@ -245,13 +229,14 @@ class Plasticity_Experiment(e.Experiment):
                     self.set_exglu_weights()
 
     def add_input_generator(self, syn, syntype, freq_multiplier = 1,
-                            tstart = p.plateau_burst_start, tend = p.plateau_burst_end, deterministic = 0, numsyn = 1):
+                            tstart = p.plateau_burst_start, tend = p.plateau_burst_end,
+                            deterministic = 0):
 
         if deterministic == 1:
             noise = 0
             start = tstart
             number = p.num_spikes
-            interval = p.net_con_interval
+            interval = p.deterministic_interval
             weight = p.gmaxAMPA_spillover
 
             if syntype in ['input_syn']:
@@ -284,7 +269,7 @@ class Plasticity_Experiment(e.Experiment):
             elif syntype in ['inhexpsyn_plateau']:
                 start = tstart
                 end = p.inhibitory_burst_end
-                number = p.num_spikes
+                number = p.num_inh_spikes
                 interval = 0
                 weight = p.gGABAmax_plateau
 
@@ -326,8 +311,8 @@ class Plasticity_Experiment(e.Experiment):
             elif syntype in ['input_syn']:
                 start = p.distributed_input_start
                 end = p.distributed_input_end
-                number = (end-start) * p.distributed_input_rate
-                interval = p.distributed_input_interval
+                number = p.num_spikes#(end-start) * p.distributed_input_rate
+                interval = p.deterministic_interval
                 weight = p.weight
 
             elif syntype in ['adaptive_glutamate']:
@@ -473,8 +458,12 @@ class Plasticity_Experiment(e.Experiment):
                 synlist = self.get_synapse_list('adaptive_AMPA', clustered_flag = True)
             elif self.exptype == 'xor_sspillover':
                 synlist = self.get_synapse_list('adaptive_sAMPA', clustered_flag = True)
-            elif self.exptype in ['xor_hom_spillover', 'nfbp_inh','fbp']:
+            elif self.exptype in ['xor_hom_spillover', 'nfbp_inh']:
                 synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+            elif self.exptype in ['fbp'] and p.connectivity == 'clustered':
+                synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+            elif self.exptype in ['fbp'] and p.connectivity == 'random':
+                synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
             elif self.exptype in ['xor_addhom_spillover']:
                 synlist = self.get_synapse_list('adaptive_addhom_NMDA', clustered_flag = True)
             elif self.exptype == 'xor_ahom_spillover':
@@ -558,7 +547,7 @@ class Plasticity_Experiment(e.Experiment):
                                 self.mlist[-1].append(h.Vector())
                                 self.mlist[-1][-1].record(i._ref_m, record_step)
 
-        if self.exptype in ['record_ca']:
+        if self.exptype in ['record_ca', 'record_ca_dist']:
             self.m = []
             self.ica_nmda = []
             self.ica_spine = []
@@ -569,48 +558,71 @@ class Plasticity_Experiment(e.Experiment):
                 self.m.append(h.Vector())
                 self.m[-1].record(intfire._ref_m, record_step)
 
-            for d in dend_record_list:
-                pos = p.cluster_start_poss[(p.independent_dends).index(d)]
-                self.vdlist.append(h.Vector())
-                self.vdlist[-1].record(self.cell.dendlist[d](pos)._ref_v, p.record_step_v)
+            if self.exptype == 'record_ca':
+                for i,d in enumerate(dend_record_list):
+                    pos = p.cluster_start_poss[(p.independent_dends).index(d)]
+                    self.vdlist.append(h.Vector())
+                    self.vdlist[-1].record(self.cell.dendlist[d](pos)._ref_v, p.record_step_v)
 
-                self.cai.append(h.Vector())
-                self.cali.append(h.Vector())
-#                self.cati.append(h.Vector())
-                self.cai_nmda.append(h.Vector())
-                # self.cali_dend.append(h.Vector())
-                self.cai[-1].record(self.cell.dendlist[d](pos)._ref_cai, record_step)
-                self.cali[-1].record(self.cell.dendlist[d](pos)._ref_cali, record_step)
-                self.cai_nmda[-1].record(self.cell.dendlist[d](pos)._ref_ca_nmdai, record_step)
-                # self.cali_dend[-1].record(self.cell.dendlist[d](pos)._ref_cali, record_step)
+                    self.cai.append(h.Vector())
+                    self.cali.append(h.Vector())
+    #                self.cati.append(h.Vector())
+                    self.cai_nmda.append(h.Vector())
+                    # self.cali_dend.append(h.Vector())
+                    self.cai[-1].record(self.cell.dendlist[d](pos)._ref_cai, record_step)
+                    self.cali[-1].record(self.cell.dendlist[d](pos)._ref_cali, record_step)
+                    self.cai_nmda[-1].record(self.cell.dendlist[d](pos)._ref_ca_nmdai, record_step)
+                    # self.cali_dend[-1].record(self.cell.dendlist[d](pos)._ref_cali, record_step
+                    if self.cell.spines != []:
 
-                if self.cell.spines != []:
-                    self.record_spinelist = [s for s in self.cell.spines if s.parent == self.cell.dendlist[d] and s.syn_on == 1]
-                    if p.include_empty_spines:
-                        self.record_spinelist.extend([s for s in self.cell.spines if s.parent == self.cell.dendlist[d] and s.syn_on == 0])
-                    for spine in self.record_spinelist:
+                        self.record_spinelist = [s for s in self.cell.spines if s.parent == self.cell.dendlist[d] and s.syn_on == 1]
+                        if p.include_empty_spines:
+                            self.record_spinelist.extend([s for s in self.cell.spines if s.parent == self.cell.dendlist[d] and s.syn_on == 0])
+                        for spine in self.record_spinelist:
+    #                    spine = self.record_spinelist[0]
+                            self.vspine.append(h.Vector())
+                            self.vspine[-1].record(spine.head(0.5)._ref_v, p.record_step_v)
+                            self.cali_spine.append(h.Vector())
+                            self.cali_spine[-1].record(spine.head(0.5)._ref_cali, record_step)
+                            # self.cati_spine.append(h.Vector())
+                            # self.cati_spine[-1].record(spine.head(0.5)._ref_cati, record_step)
+                            self.cao.append(h.Vector())
+                            self.cao[-1].record(spine.head(0.5)._ref_cao, record_step)
+                            self.cai_spine.append(h.Vector())
+                            self.cai_spine[-1].record(spine.head(0.5)._ref_cai, record_step)
+                            self.ica_spine.append(h.Vector())
+                            self.ica_spine[-1].record(spine.head(0.5)._ref_ica, record_step)
+                            if not p.with_diffusion:
+                                self.cai_nmda_spine.append(h.Vector())
+                                self.cai_nmda_spine[-1].record(spine.head(0.5)._ref_ca_nmdai, record_step)
+
+                            print("Length of record_spinelist = ", len(self.record_spinelist), "len(self.vspine) = ", len(self.vspine))
+
+            elif self.exptype == 'record_ca_dist':
+                self.record_spinelist = self.cell.spines
+                for i,d in enumerate(dend_record_list):
+                    pos = self.cell.spines[i].pos
+                    self.vdlist.append(h.Vector())
+                    self.vdlist[-1].record(self.cell.dendlist[d](pos)._ref_v, p.record_step_v)
+                for spine in self.record_spinelist:
 #                    spine = self.record_spinelist[0]
-                        self.vspine.append(h.Vector())
-                        self.vspine[-1].record(spine.head(0.5)._ref_v, p.record_step_v)
-                        self.cali_spine.append(h.Vector())
-                        self.cali_spine[-1].record(spine.head(0.5)._ref_cali, record_step)
-                        # self.cati_spine.append(h.Vector())
-                        # self.cati_spine[-1].record(spine.head(0.5)._ref_cati, record_step)
-                        self.cao.append(h.Vector())
-                        self.cao[-1].record(spine.head(0.5)._ref_cao, record_step)
-                        self.cai_spine.append(h.Vector())
-                        self.cai_spine[-1].record(spine.head(0.5)._ref_cai, record_step)
-                        self.ica_spine.append(h.Vector())
-                        self.ica_spine[-1].record(spine.head(0.5)._ref_ica, record_step)
-                        if not p.with_diffusion:
-                            self.cai_nmda_spine.append(h.Vector())
-                            self.cai_nmda_spine[-1].record(spine.head(0.5)._ref_ca_nmdai, record_step)
+                    self.vspine.append(h.Vector())
+                    self.vspine[-1].record(spine.head(0.5)._ref_v, p.record_step_v)
+                    self.cali_spine.append(h.Vector())
+                    self.cali_spine[-1].record(spine.head(0.5)._ref_cali, record_step)
+                    # self.cati_spine.append(h.Vector())
+                    # self.cati_spine[-1].record(spine.head(0.5)._ref_cati, record_step)
+                    self.cao.append(h.Vector())
+                    self.cao[-1].record(spine.head(0.5)._ref_cao, record_step)
+                    self.cai_spine.append(h.Vector())
+                    self.cai_spine[-1].record(spine.head(0.5)._ref_cai, record_step)
+                    self.ica_spine.append(h.Vector())
+                    self.ica_spine[-1].record(spine.head(0.5)._ref_ica, record_step)
+                    if not p.with_diffusion:
+                        self.cai_nmda_spine.append(h.Vector())
+                        self.cai_nmda_spine[-1].record(spine.head(0.5)._ref_ca_nmdai, record_step)
 
-#                        self.ical.append(h.Vector())
-#                        self.ical[-1].record(spine.head(0.5)._ref_ical, record_step)
-                        self.ica_nmda = []
-                        self.ica_nmda.append(h.Vector())
-                        self.ica_nmda[-1].record(spine.head(0.5)._ref_ica_nmda, record_step)
+                    print("Length of record_spinelist = ", len(self.record_spinelist), "len(self.vspine) = ", len(self.vspine))
 
         if self.exptype in ['nfbp_inh']:
 
@@ -871,65 +883,114 @@ class Plasticity_Experiment(e.Experiment):
                 self.v_agh[-1].record(syn.sec(syn.pos)._ref_v, p.record_step_v)
 
     def plot_voltage(self):
+        if self.exptype == 'fbp' and p.connectivity == 'random':
+            fig, axes = plt.subplots(1, 1, figsize = (p.fig_width, p.fig_height))
+            fig_ba, axes_ba = plt.subplots(1, 1, figsize = (p.fig_width, p.fig_height))
 
-        rows = len(self.dend_record_list)//p.dends_per_plot
-        if (len(self.dend_record_list) % p.dends_per_plot) == 0:
-            rows = rows + 1
+            multiplier = int(p.session_length*p.nrn_dots_per_1ms)
+            start = int(p.first_training_input_start*p.nrn_dots_per_1ms)
+            end = int(p.num_different_stimuli*multiplier+p.first_training_input_start*p.nrn_dots_per_1ms)
+
+            axes.plot(self.tv, self.vs)
+            axes.set_ylabel('v$_{\mathrm{soma}}$ (mV)')
+            axes.set_yticks([-80, 20])
+            axes.set_xlabel('t (ms)')
+
+            axes_ba.plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[start:end], color = 'gray')
+            axes_ba.plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
+            axes_ba.set_ylabel('v$_{\mathrm{soma}}$ (mV)')
+            axes_ba.set_yticks([-80, 20])
+            axes_ba.set_xlabel('t (ms)')
+
+        elif self.exptype == 'fbp' and p.connectivity == 'clustered':
+            fig, axes = plt.subplots(2, 1, sharex = True, figsize = (p.fig_width, p.fig_height))
+            fig_ba, axes_ba = plt.subplots(2,1, sharex = True, figsize = (p.fig_width, p.fig_height))
+            legends = [];
+            axes[0].plot(self.tv, self.vdlist[0]);
+            multiplier = int(p.session_length*p.nrn_dots_per_1ms)
+            start = int(p.first_training_input_start*p.nrn_dots_per_1ms)
+            end = int(p.num_different_stimuli*multiplier+p.first_training_input_start*p.nrn_dots_per_1ms)
+            axes_ba[0].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[0].to_python()[start:end], color = 'gray');
+            axes_ba[0].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[0].to_python()[-p.num_different_stimuli*multiplier:], color = 'black');
+
+            axes[0].set_yticks([-80, -20])
+            axes[0].set_ylabel('v$_{\mathrm{d%d}}$ (mV)' % 1)
+            axes_ba[0].set_ylabel('v$_{\mathrm{d%d}}$ (mV)' % 1)
+            axes_ba[0].set_yticks([-80, -20])
+
+            axes[-1].plot(self.tv, self.vs)
+            axes[-1].set_ylabel('v$_{\mathrm{soma}}$ (mV)')
+            axes[-1].set_yticks([-80, 20])
+            axes[-1].set_xlabel('t (ms)')
+
+            axes_ba[-1].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[start:end], color = 'gray')
+            axes_ba[-1].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
+            axes_ba[-1].set_ylabel('v$_{\mathrm{soma}}$')
+            axes_ba[-1].set_yticks([-80, 20])
+            axes_ba[-1].set_xlabel('t (ms)')
         else:
-            rows = rows + 2
+            rows = len(self.dend_record_list)//p.dends_per_plot
+            if (len(self.dend_record_list) % p.dends_per_plot) == 0:
+                rows = rows + 1
+            else:
+                rows = rows + 2
 
-        plot_num = 1;
-        fig, axes = plt.subplots(rows, 1, sharex = True)
-        fig_ba, axes_ba = plt.subplots(rows,1, sharex = True)
-        legends = [];
-        axes[0].plot(self.tv, self.vdlist[0]); plot_num += 1;
-        multiplier = int(p.session_length*p.nrn_dots_per_1ms)
-        start = int(p.first_training_input_start*p.nrn_dots_per_1ms)
-        end = int(p.num_different_stimuli*multiplier+p.first_training_input_start*p.nrn_dots_per_1ms)
-        axes_ba[0].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[0].to_python()[start:end], color = 'gray');
-        axes_ba[0].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[0].to_python()[-p.num_different_stimuli*multiplier:], color = 'black');
+            plot_num = 1;
+            fig, axes = plt.subplots(rows, 1, sharex = True)
+            fig_ba, axes_ba = plt.subplots(rows,1, sharex = True, figsize = (p.fig_width, p.fig_height*2))
+            legends = [];
+            axes[0].plot(self.tv, self.vdlist[0]); plot_num += 1;
+            multiplier = int(p.session_length*p.nrn_dots_per_1ms)
+            start = int(p.first_training_input_start*p.nrn_dots_per_1ms)
+            end = int(p.num_different_stimuli*multiplier+p.first_training_input_start*p.nrn_dots_per_1ms)
+            axes_ba[0].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[0].to_python()[start:end], color = 'gray');
+            axes_ba[0].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[0].to_python()[-p.num_different_stimuli*multiplier:], color = 'black');
 
-        if type(self.dend_record_list) == list:
-            legends.append(['Dend 1'])
+            if type(self.dend_record_list) == list:
+                legends.append(['Dend 1'])
 
-            for i in range(1,len(self.vdlist)):
-                if i//p.dends_per_plot == (i-1)//p.dends_per_plot:
-                    idx = (i-1)//p.dends_per_plot
-                    axes[idx].plot(self.tv, self.vdlist[i])
-                    axes_ba[idx].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[idx].to_python()[start:end], color = 'gray')
-                    axes_ba[idx].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[idx].to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
-                    legends.append(['Dend %d' % (i+1)] )
+                for i in range(1,len(self.vdlist)):
+                    if i//p.dends_per_plot == (i-1)//p.dends_per_plot:
+                        idx = (i-1)//p.dends_per_plot
+                        axes[idx].plot(self.tv, self.vdlist[i])
+                        axes_ba[idx].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[idx].to_python()[start:end], color = 'gray')
+                        axes_ba[idx].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[idx].to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
+                        legends.append(['Dend %d' % (i+1)] )
+                    else:
+                        idx = i//p.dends_per_plot
+                        axes[idx].plot(self.tv, self.vdlist[i])
+                        axes_ba[idx].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[idx].to_python()[start:end], color = 'gray')
+                        axes_ba[idx].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[idx].to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
+                        legends.append(['Dend %d' % (i+1)] )
+
+            for i in range(0,rows-1):
+                axes[i].set_ylabel('v$_{\mathrm{d%d}}$ (mV)' % (i+1))
+                axes[i].set_yticks([-80, -20])
+                axes[i].set_xlabel('t (ms)')
+                axes[i].legend(legends[i], frameon = False)
+                if i == 0:
+                    ylabel = 'v$_{\mathrm{d%d}}$ (mV)' % (i+1)
                 else:
-                    idx = i//p.dends_per_plot
-                    axes[idx].plot(self.tv, self.vdlist[i])
-                    axes_ba[idx].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[idx].to_python()[start:end], color = 'gray')
-                    axes_ba[idx].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[idx].to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
-                    legends.append(['Dend %d' % (i+1)] )
+                    ylabel = 'v$_{\mathrm{d%d}}$' % (i+1)
+                axes_ba[i].set_ylabel(ylabel)
+                axes_ba[i].set_yticks([-80, -20])
+                # axes_ba[i].set_xlabel('t (ms)')
+                # axes_ba[i].legend(legends[i], frameon = False)
 
-        for i in range(0,rows-1):
-            axes[i].set_ylabel('v$_{\mathrm{d%d}}$ (mV)' % (i+1))
-            axes[i].set_yticks([-80, -50, -20])
-            axes[i].set_xlabel('t (ms)')
-            axes[i].legend(legends[i], frameon = False)
-            axes_ba[i].set_ylabel('v$_{\mathrm{d%d}}$ (mV)' % (i+1))
-            axes_ba[i].set_yticks([-80, -50, -20])
-            # axes_ba[i].set_xlabel('t (ms)')
-            # axes_ba[i].legend(legends[i], frameon = False)
+            #-----------------------------------------#
+            #           Plot voltage in soma          #
+            #-----------------------------------------#
 
-        #-----------------------------------------#
-        #           Plot voltage in soma          #
-        #-----------------------------------------#
-
-        plot_num += 1;
-        axes[-1].plot(self.tv, self.vs)
-        axes[-1].set_ylabel('v$_{\mathrm{soma}}$ (mV)')
-        axes[-1].set_yticks([-80, -20, 20])
-        axes[-1].set_xlabel('t (ms)')
-        axes_ba[-1].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[start:end], color = 'gray')
-        axes_ba[-1].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
-        axes_ba[-1].set_ylabel('v$_{\mathrm{soma}}$ (mV)')
-        axes_ba[-1].set_yticks([-80, -20, 20])
-        axes_ba[-1].set_xlabel('t (ms)')
+            plot_num += 1;
+            axes[-1].plot(self.tv, self.vs)
+            axes[-1].set_ylabel('v$_{\mathrm{soma}}$ (mV)')
+            axes[-1].set_yticks([-80, 20])
+            axes[-1].set_xlabel('t (ms)')
+            axes_ba[-1].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[start:end], color = 'gray')
+            axes_ba[-1].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
+            axes_ba[-1].set_ylabel('v$_{\mathrm{soma}}$')
+            axes_ba[-1].set_yticks([-80, 20])
+            axes_ba[-1].set_xlabel('t (ms)')
 
         return fig, axes, fig_ba, axes_ba
 
@@ -1401,8 +1462,8 @@ class Plasticity_Experiment(e.Experiment):
                     color = colormap(h.distance(synlist_agh[i].pos, sec = synlist_agh[i].sec)/cmax)
                     ax_agh[-1].plot(self.tthresh, nmda, color = color)
                     if not p.long_simulation:
-                        ax_cali_agh[-1].plot(self.tout*0.001, cali_agh[i], color = color)
-                        ax_cai_agh[-1].plot(self.tout*0.001, cai_agh[i], color = color)
+                        ax_cali_agh[-1].plot(np.asarray(self.tout)*0.001, cali_agh[i], color = color)
+                        ax_cai_agh[-1].plot(np.asarray(self.tout)*0.001, cai_agh[i], color = color)
                         # ax_cai_nmda_agh[-1].plot(self.tout, self.cai_nmda_agh[i])
                         ax_lthresh_LTP_agh[-1].plot(np.asarray(self.tthresh)*0.001, np.asarray(synlist_agh[i].ref_var_lthresh_LTP.to_python())*1000, color = color)
                         ax_lthresh_LTD_agh[-1].plot(np.asarray(self.tthresh)*0.001, synlist_agh[i].ref_var_lthresh_LTD.to_python(), color = color)
@@ -1617,7 +1678,7 @@ class Plasticity_Experiment(e.Experiment):
                 ylimu = yval.max()
         elif plot_what == 'wnmda' or plot_what == 'pf':
             yval = np.asarray([np.asarray(s.ref_var_nmda.to_python())/syn_strength for s in l])*100
-            ylabel = '  NMDA conductance\n(% of initial value)'
+            ylabel = 'w (% of w$_0$)'
             yliml = yval.min()#p.gNMDAmax_plateau*p.scale_conductance
             ylimu = yval.max()#p.gNMDAmax_plateau*p.scale_conductance
         elif plot_what == 'wnmda_e':
@@ -1715,7 +1776,7 @@ class Plasticity_Experiment(e.Experiment):
         figs = []; axess = []; legend = []
 
         if p.connectivity == 'random':
-            figs.append(plt.figure())
+            figs.append(plt.figure(figsize = (p.fig_width, p.fig_height)))
             axess.append(figs[-1].add_subplot(111))
             axess[-1].set_xlabel(xlabel)
             axess[-1].set_ylabel(ylabel)
@@ -1723,18 +1784,29 @@ class Plasticity_Experiment(e.Experiment):
             for i, syn in enumerate(l):
                 if plot_what in ['wampa','wnmda','thresh_LTP', 'lthresh_LTP', 'hthresh_LTP',
                                  'thresh_LTD']:
+                    if plot_what in ['wampa', 'wnmda']:
+                        axess[-1].yaxis.set_ticks([0, 100, int(p.LTP_factor*100)])
+                        axess[-1].set_ylim(0, int(p.LTP_factor*100))
                     color, linestyle, marker = self.set_color(syn.source)
-                    axess[-1].plot(np.multiply(self.tthresh.to_python(),0.001), yval[i], color = color, linestyle = linestyle)
+                    if plot_what in ['wampa', 'wnmda', 'winh', 'theta_inh', 'theta_min_inh']:
+                        if i < p.xor_input_size:
+                            zorder = 5
+                        else:
+                            zorder = 1
+                        axess[-1].plot(np.multiply(self.tthresh.to_python(),0.001), yval[i], color = color, linestyle = linestyle, zorder = zorder)
+                    elif (i%p.xor_input_size == 0):
+                        axess[-1].plot(np.multiply(self.tthresh.to_python(),0.001), yval[i], color = color, linestyle = linestyle, linewidth = p.linewidth)
 
                     if plot_what in ['lthresh_LTP', 'hthresh_LTP', 'thresh_LTD']:
                         if plot_what not in ['thresh_LTD']:
                             inds, peaks = ss.find_peaks(syn.ref_var_cai.to_python(), height = p.thresh_LTP_min)
                         else:
                             inds, peaks = ss.find_peaks(syn.ref_var_cali.to_python(), height = p.thresh_LTD_min)
-                        inds2 = inds[3::4]; peaks2 = peaks['peak_heights'][3::4]
+                        inds2 = inds[p.max_ca_first_elem::p.max_ca_step];
+                        peaks2 = peaks['peak_heights'][p.max_ca_first_elem::p.max_ca_step]
                         tinds = np.asarray(self.tout)[list(inds2)]
-                        if (i%10 == 0):
-                            axess[-1].plot(tinds, peaks2*1000, color = color, linestyle = '', marker = 'o', markersize = 2.0)
+                        if (i%p.xor_input_size == 0):
+                            axess[-1].plot(tinds, peaks2*1000, color = color, linestyle = '', marker = 'o', markersize = p.markersize)
 
                 elif plot_what in ['cai', 'ca_nmda', 'cali', 'ica']:
                     color, linestyle, marker = self.set_color(syn.source)
@@ -1742,7 +1814,12 @@ class Plasticity_Experiment(e.Experiment):
 
                 else:
                     axess[-1].plot(self.tout, yval[i])
-
+            if plot_what in ['lthresh_LTP']:
+                axess[-1].yaxis.set_ticks([0, p.tick_thresh_LTP])
+                axess[-1].set_ylim(p.ymin_thresh_LTP, p.ymax_thresh_LTP)
+            elif plot_what in ['thresh_LTD']:
+                axess[-1].yaxis.set_ticks([0, p.tick_thresh_LTD])
+                axess[-1].set_ylim(p.ymin_thresh_LTD, p.ymax_thresh_LTD)
 
         elif p.connectivity == 'clustered':
             r = [si for s in l for si in re.findall("\[\d+\]", s.sec.name()) ]
@@ -1750,31 +1827,33 @@ class Plasticity_Experiment(e.Experiment):
 
             for i in range(0,len(l)):
                 if i==0 or (r[i] != r[i-1]):
-                    figs.append(plt.figure())
+                    figs.append(plt.figure(figsize = (p.fig_width, p.fig_height)))
                     axess.append(figs[-1].add_subplot(111))
                     axess[-1].set_xlabel(xlabel)
                     axess[-1].set_ylabel(ylabel)
                     if plot_what in ['wampa', 'wnmda']:
-                        axess[-1].set_ylim(yliml, ylimu)
-                        # if p.simtime > 1000:
-                        #     axess[-1].xaxis.set_ticks(np.arange(0,self.tout[-1], 10))
-                        if plot_what == 'wampa' or plot_what == 'wnmda':
-                            axess[-1].yaxis.set_ticks([50, 100, 150])
-                            # axess[-1].xaxis.set_ticks(np.arange(0,self.tthresh[-1], 100000))
+                        axess[-1].yaxis.set_ticks([0, 100, int(p.LTP_factor*100)])
+                        axess[-1].set_ylim(p.ymin_w, p.ymax_w)
+
                 if plot_what in ['wampa','wnmda','thresh_LTP', 'lthresh_LTP', 'hthresh_LTP',
                                  'thresh_LTD', 'winh', 'theta_inh', 'theta_min_inh']:
                     color, linestyle, marker = self.set_color(l[i].source)
-                    axess[-1].plot(np.multiply(self.tthresh.to_python(),0.001), yval[i], color = color, linestyle = linestyle)
+                    if plot_what in ['wampa', 'wnmda', 'winh', 'theta_inh', 'theta_min_inh']:
+                        axess[-1].plot(np.multiply(self.tthresh.to_python(),0.001), yval[i], color = color, linestyle = linestyle)
+                    elif (i%10 == 0):
+                        axess[-1].plot(np.multiply(self.tthresh.to_python(),0.001), yval[i], color = color, linestyle = linestyle, linewidth = p.linewidth)
 
                     if plot_what in ['lthresh_LTP', 'hthresh_LTP', 'thresh_LTD']:
                         if plot_what not in ['thresh_LTD']:
-                            inds, peaks = ss.find_peaks(l[i].ref_var_cai.to_python(), height = 0.0001)
+                            inds, peaks = ss.find_peaks(l[i].ref_var_cai.to_python(), height = p.thresh_LTP)
                         else:
-                            inds, peaks = ss.find_peaks(l[i].ref_var_cali.to_python(), height = 0.0001)
-                        inds2 = inds[3::4]; peaks2 = peaks['peak_heights'][3::4]
+                            inds, peaks = ss.find_peaks(l[i].ref_var_cali.to_python(), height = p.thresh_LTD)
+                        inds2 = inds[p.max_ca_first_elem::p.max_ca_step];
+                        peaks2 = peaks['peak_heights'][p.max_ca_first_elem::p.max_ca_step]
                         tinds = np.asarray(self.tout)[list(inds2)]
                         if (i%10 == 0):
-                            axess[-1].plot(tinds, peaks2*1000, color = color, linestyle = '', marker = 'o', markersize = 2.0)
+                            print("This synapse %d has a \%10 = 0 ", i)
+                            axess[-1].plot(tinds, peaks2*1000, color = color, linestyle = '', marker = 'o', markersize = p.markersize)
 
                 elif plot_what in ['theta_inh', 'theta_min_inh']:
                     axess[-1].plot(self.t, np.multiply(p.theta_inh_sf,l[i].ref_var_caint.to_python()), color = color, linewidth = 0.5)
@@ -1788,6 +1867,13 @@ class Plasticity_Experiment(e.Experiment):
 
                 else:
                     axess[-1].plot(self.tout, yval[i])
+
+                if plot_what in ['lthresh_LTP']:
+                    axess[-1].yaxis.set_ticks([0, p.tick_thresh_LTP_clus])
+                    axess[-1].set_ylim(p.ymin_thresh_LTP_clus, p.ymax_thresh_LTP_clus)
+                elif plot_what in ['thresh_LTD']:
+                    axess[-1].yaxis.set_ticks([0, p.tick_thresh_LTD_clus])
+                    axess[-1].set_ylim(p.ymin_thresh_LTD_clus, p.ymax_thresh_LTD_clus)
 
                 if not (i == 0) and (r[i] != r[i-1]):
     #                axes[-2].legend(legend)
@@ -1803,9 +1889,15 @@ class Plasticity_Experiment(e.Experiment):
             axess[-1].set_title("Dendrite %d" % r[i-1])
             if plot_what in ['lthresh_LTP']:
                 axess[-1].plot(tinds, 1000*p.hthresh_LTP*np.ones(len(tinds),), color = 'gray', linestyle = '--')
+                if self.exptype in ['xor_hom_spillover']:
+                    axess[-2].plot(tinds, 1000*p.hthresh_LTP*np.ones(len(tinds),), color = 'gray', linestyle = '--')
                 # axess[-2].plot(tinds, 1000*p.hthresh_LTP*np.ones(len(tinds),), color = 'gray', linestyle = '--')
-                # axess[-1].set_xticks([0,100,200,300])
-                # axess[-2].set_xticks([0,100,200,300])
+            if plot_what in ['thresh_LTD']:
+                axess[-1].set_yticks([0,p.tick_thresh_LTD_clus]);
+                axess[-1].set_ylim(p.ymin_thresh_LTD_clus, p.ymax_thresh_LTD_clus)
+                if p.num_different_stimuli == 4:
+                    axess[-2].set_yticks([0,p.tick_thresh_LTD_clus]);
+                    axess[-2].set_ylim(p.ymin_thresh_LTD_clus, p.ymax_thresh_LTD_clus)
             # elif plot_what in ['thresh_LTD']:
                 # axess[-1].set_xticks([0,100,200,300])
                 # axess[-2].set_xticks([0,100,200,300])
@@ -2509,8 +2601,7 @@ class Plasticity_Experiment(e.Experiment):
     def connect_xor_inputs(self, connectivity = p.connectivity):
         if connectivity == 'random':
             dist_dends = list(set(range(1, len(self.cell.dendlist)-1)) - set([0,1,6,7,11,16,19, 23, 25, 30, 31, 32, 39, 42, 43, 49, 54, 55]))
-            dend_lengths = [h.distance(1, sec = self.cell.dendlist[d]) - h.distance(0, sec = self.cell.dendlist[d]) for d in dist_dends]
-            dend_lengths = np.asarray(dend_lengths)/sum(dend_lengths)
+            dend_lengths = self.cell.get_dend_proportions(dist_dends)
             if p.rnd_exptype == 'spillover':
                 spillover_indices, exglu_list, exglusec_list,num_syns_in_segment = self.segment_dendrites(dist_dends, 20)
                 # print(spillover_indices)
