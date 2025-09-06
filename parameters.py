@@ -14,13 +14,13 @@ step = 20.0
 record_step = 1
 record_step_v = 1
 record_step_PDC = 1000
-skip_first_x_ms = 0
+skip_first_x_ms = 100
 
 nrn_dots_per_1ms = 1.0/record_step_v
 time_to_avg_over = 20 # in seconds
 
-simtime = 2000
-training_mode = 'sub'
+simtime = 700
+training_mode = 'supra'
 connectivity = 'clustered'
 rnd_exptype = 'no_spillover'
 num_trials = 20
@@ -34,9 +34,9 @@ isyn_tau = 6
 isyn_plateau_tau = 10
 e_esyn = 0
 e_gaba = -60
-erev_NMDA = 15
-erate = 1.0
-irate = 1.0
+erev_NMDA = 0
+erate = 0.4
+irate = 0.4
 pos = 0.05
 # NMDA parameters
 
@@ -64,8 +64,8 @@ ratio_distributed_synapses = 0.2
 nmda_ca_fraction = 0.175
 
 gmaxAMPA_spillover = 1.5e-3 #0.015
-gmaxNMDA_spillover = 2.5e-3
-gmaxNMDAe_spillover = 4.5e-3 #0.0075
+gmaxNMDA_spillover = 3.5e-3
+gmaxNMDAe_spillover = 3.5e-3 #0.0075
 gmaxAMPA_pf = 2.5e-3
 gmaxNMDA_pf = 4.5e-3
 ampa_alpha = 12.5
@@ -96,7 +96,7 @@ min_random_interval = 1
 exglu_weight = weight
 exglu_tau = 1e6
 thresh_weight = 0.5
-thresh_syns = 20
+thresh_syns = 16
 exglu_norm_factor = 1/(thresh_syns*thresh_weight)*1/num_spikes
 
 tau1_NMDA = 2.76
@@ -122,7 +122,7 @@ plateau_cluster_size = 20
 plateau_cluster_size_max = 41
 cluster_start_pos = 0.45
 cluster_end_pos = 0.60
-xor_input_window = 35
+xor_input_window = 30#35
 xor_input_size = 20
 syns_per_feature = 5
 
@@ -140,8 +140,8 @@ inh_input_window = 100
 distributed_input_rate = 1000.0/40
 distributed_input_start = 200
 distributed_input_end = 230
-distributed_input_size = 0#80
-distributed_input_window = 35#755
+distributed_input_size = 80
+distributed_input_window = 75#35
 correlated_distributed_inputs = False
 
 ramp_syn_rate = 100.0
@@ -189,14 +189,14 @@ long_simulation = False
 adaptive_timestep_integration = False
 absolute_integrator_tolerance = 1e-2
 
-training_set_size_per_group = 200
-num_different_stimuli = 2
+training_set_size_per_group = 100
+num_different_stimuli = 4
 training_set_size = training_set_size_per_group*num_different_stimuli
 extra_training_inputs = num_different_stimuli*2
 training_input_length = xor_input_window
 first_training_input_start = 200
 time_to_reward = 400 - training_input_length
-reward_length = 20
+reward_length = 50
 session_length = 600
 test_set_size_per_group = 1
 test_set_size = test_set_size_per_group*4
@@ -302,7 +302,7 @@ kcat_pmca_spine = 0.6
 Kd_pmca = 0.3
 
 ca_in0 = 5e-5
-ca_out0 = 2.0
+ca_out0 = 1.0
 calbindin0 = 0.08
 camn0 = 0.015
 camc0 = 0.015
