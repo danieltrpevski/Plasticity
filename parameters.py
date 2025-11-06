@@ -64,8 +64,8 @@ ratio_distributed_synapses = 0.2
 nmda_ca_fraction = 0.175
 
 gmaxAMPA_spillover = 1.5e-3 #0.015
-gmaxNMDA_spillover = 3.5e-3
-gmaxNMDAe_spillover = 3.5e-3 #0.0075
+gmaxNMDA_spillover = 2.5e-3
+gmaxNMDAe_spillover = 4.5e-3 #0.0075
 gmaxAMPA_pf = 2.5e-3
 gmaxNMDA_pf = 4.5e-3
 ampa_alpha = 12.5
@@ -140,7 +140,7 @@ inh_input_window = 100
 distributed_input_rate = 1000.0/40
 distributed_input_start = 200
 distributed_input_end = 230
-distributed_input_size = 80
+distributed_input_size = 0
 distributed_input_window = 75#35
 correlated_distributed_inputs = False
 
@@ -201,7 +201,7 @@ session_length = 600
 test_set_size_per_group = 1
 test_set_size = test_set_size_per_group*4
 
-window_error = 2
+window_error = 20
 record_step_thresh = session_length/2
 
 LTP_factor = 2.0
