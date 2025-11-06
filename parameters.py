@@ -20,7 +20,7 @@ nrn_dots_per_1ms = 1.0/record_step_v
 time_to_avg_over = 20 # in seconds
 
 simtime = 700
-training_mode = 'supra'
+training_mode = 'sub'
 connectivity = 'clustered'
 rnd_exptype = 'no_spillover'
 num_trials = 20
@@ -34,9 +34,9 @@ isyn_tau = 6
 isyn_plateau_tau = 10
 e_esyn = 0
 e_gaba = -60
-erev_NMDA = 0
-erate = 0.4
-irate = 0.4
+erev_NMDA = 15
+erate = 1.2
+irate = 1.2
 pos = 0.05
 # NMDA parameters
 
@@ -213,12 +213,10 @@ thresh_LTP_min = 0.0004
 thresh_LTD_min = 0.0001
 LTD_thresh_factor = 1.0
 
-learning_rate_w_LTP = 0.85#0.5#0.01
-learning_rate_w_LTD = 0.85#3.5
-learning_rate_w_LTD_pf = 0#0.05
-learning_rate_thresh_LTP = 2.0#2.5
-learning_rate_thresh_LTPl = 0.0025*0.5
-learning_rate_thresh_LTD = 2.0#2.5
+learning_rate_w_LTP = 0.85
+learning_rate_w_LTD = 0.85
+learning_rate_thresh_LTP = 2.0
+learning_rate_thresh_LTD = 2.0
 learning_rate_thresh_KD_LTD = 0.05
 lthresh_LTP_min = 0.01
 threshold_scale_factor = 1.0
@@ -233,19 +231,6 @@ KD_LTD = 0.0002
 n_LTD = 750
 KD_LTD_pf = 0.0001
 n_LTD_pf = 1000
-
-theta_inh_sf = 1e3
-caint0 = 0.0000
-theta_min_min_inh = theta_inh_sf*0.0002
-theta_min_inh = theta_inh_sf*0.0002#0.003
-theta_inh = theta_inh_sf*0.01#0.0004#0.016
-steepness_inh = 100000/theta_inh_sf
-weight_inh = 0.15
-learning_rate_inh = 0.05e-3#0.5e-3
-learning_rate_theta_inh = 0.2e-3
-start_inh_plasticity = 3000
-start_inh_plasticity_offset = 0
-inh_exptype = 'weights'
 
 random_weights = False
 read_input_config_from_file = False
@@ -302,7 +287,7 @@ kcat_pmca_spine = 0.6
 Kd_pmca = 0.3
 
 ca_in0 = 5e-5
-ca_out0 = 1.0
+ca_out0 = 2.0
 calbindin0 = 0.08
 camn0 = 0.015
 camc0 = 0.015
