@@ -162,7 +162,7 @@ BREAKPOINT {
         } else {
 	  if (last_dopamine == 1 && active_syn_flag == 1) {
                  kernel = sigmoidal(ca_nmdai_max, KD_LTD, n_LTD)
-		  weight = weight - learning_rate_w_LTD * kernel * weight
+		 weight = weight - learning_rate_w_LTD * kernel * weight
 		  		  
           } else if (last_dopamine == -1 && active_syn_flag == 1) {
 		 

@@ -90,7 +90,8 @@ class Experiment(object):
 
     def helper_insert(self, syntype, pos, dend, freq_multiplier):
         if syntype in ['expsyn', 'exp2syn',
-                       'inhexpsyn', 'inhexp2syn', 'glutamate']:
+                       'inhexpsyn', 'inhexp2syn', 'glutamate',
+                       'adaptive_inhexp2syn', 'inhexp2syn_caint']:
             syn = self.cell.insert_synapse(syntype, dend, pos)
             self.add_input_generator(syn, syntype, freq_multiplier)
 
@@ -130,10 +131,14 @@ class Experiment(object):
                              'adaptive_cshom_NMDA','adaptive_glutamate_cshom', 'adaptive_my_shom_NMDA',
                              'adaptive_sAMPA', 'adaptive_sNMDA', 'adaptive_sglutamate',
                              'NMDAe', 'adaptive_zahra_NMDA', 'adaptive_zahra_AMPA',
-                             'NMDAe_ica_nmda', 'adaptive_hom_AMPA_fNMDA', 'adaptive2_inhexp2syn']:
+                             'NMDAe_ica_nmda', 'adaptive_hom_AMPA_fNMDA',
+                             'adaptive2_inhexp2syn', 'adaptive2_homo_inhexp2syn', 'adaptive2_homo_sz_inhexp2syn',
+                             'adaptive2_homo_bcm_inhexp2syn', 'adaptive2_hetero_bcm_inhexp2syn',
+                             'adaptive2_hetero_inhexp2syn',
+                             'adaptive2_hetero_amp_inhexp2syn', 'adaptive2_cont_hetero_amp_inhexp2syn']:
                 syn.nc[-1].weight[0] = 1.0
             else:
-                print("Synapse model not available in connect_input_genetrator().")
+                print("Synapse model %s not available in connect_input_genetrator()." % syntype)
                 sys.exit(-1)
 
         # ADD THE REST OF THE SYNAPSE TYPES HERE !

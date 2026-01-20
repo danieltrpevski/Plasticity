@@ -4,7 +4,7 @@ import numpy as np
 import json
 import neuron_cls as n
 import spine as sp
-import parameters as p
+import parameters_inh as p
 
 mod        = "./mod/"
 params  = "./params_dMSN.json"
@@ -12,7 +12,7 @@ morphology = "./morphology/MSN_morphology_D1.swc"
 
 h.load_file('stdlib.hoc')
 h.load_file('import3d.hoc')
-h.nrn_load_dll(mod + 'x86_64/.libs/libnrnmech.so')
+h.nrn_load_dll(mod + 'x86_64/libnrnmech.so')
 
 #h.nrn_load_dll('/pdc/vol/neuron/7.4-py27/x86_64/.libs/libnrnmech.so')
 
@@ -27,7 +27,6 @@ class MSN(n.Neuron):
         self.spines = []
         self.num_spines_on_dends = np.zeros(len(self.dendlist))
         self.diffusion_set = False
-        self.signaling_network_set = False
 
     def create_morphology(self):
         Import = h.Import3d_SWC_read()
@@ -80,7 +79,7 @@ class MSN(n.Neuron):
             par = json.load(file)
 
         for sec in self.somalist:
-            for mech in self.somatic_channels:#+["cadyn", "caldyn"]:
+            for mech in self.somatic_channels:
                 sec.insert(mech)
 
             sec.insert("caldyn")
@@ -95,7 +94,7 @@ class MSN(n.Neuron):
                 sec.insert(mech)
 
         for sec in self.dendlist:
-            for mech in self.dendritic_channels:#+["cadyn", "caldyn", "cadyn_nmda"]:
+            for mech in self.dendritic_channels:
                 sec.insert(mech)
 
             sec.insert("caldyn")

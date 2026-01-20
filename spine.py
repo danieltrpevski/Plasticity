@@ -5,7 +5,7 @@ Created on Thu Sep 19 14:18:11 2019
 @author: daniel
 """
 from neuron import h
-import parameters as p
+import parameters_inh as p
 
 class Spine():
     """
@@ -85,13 +85,13 @@ class Spine():
 
         head.g_pas      =   1.25e-5
         head.e_pas      =   -85
+        head.depth_caldyn = 0.1
+        head.taur_caldyn = p.tau_caldyn
+
         if not p.with_diffusion:
-            head.depth_caldyn = 0.1
             head.depth_cadyn_nmda = 0.1
             head.taur_cadyn_nmda = p.tau_cadyn_nmda
-            head.taur_caldyn = p.tau_caldyn
-            # head.taur_catdyn = p.tau_catdyn
-            # head.taur_cadyn = p.tau_cadyn_nmda
+
 #        head.gbar_sk = 0.5e-4
         head.connect(neck(1),0)
 

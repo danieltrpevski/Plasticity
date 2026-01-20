@@ -7,6 +7,7 @@ Created on Wed Jul 17 17:53:21 2019
 
 from neuron import h
 import d1msn as msn
+# import iMSN as msn
 import plasticity_experiment as pe
 import parameters as p
 import pickle
@@ -14,7 +15,7 @@ import dendstat as ds
 
 # --- 1. Create a cell and other useful stuff
 dMSN_library = 'D1_71bestFit_updRheob.pkl'
-iMSN_library = 'D2_34bestFit_updRheob.pkl'
+# iMSN_library = 'D2_34bestFit_updRheob.pkl'
 with open(dMSN_library, 'rb') as f:
     model_sets  = pickle.load(f, encoding="latin1")
 

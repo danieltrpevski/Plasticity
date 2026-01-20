@@ -6,7 +6,7 @@ Created on Sun Aug 27 13:38:21 2017
 """
 
 from neuron import h
-import parameters as p
+import parameters_inh as p
 import synapse as s
 import spine as sp
 import sys
@@ -133,6 +133,7 @@ class Neuron(object):
             syn.obj.tau1_nmda = p.tau1_NMDA
             syn.obj.tau2_nmda = p.tau2_NMDA
             syn.obj.ratio = p.ratio_glutamate_syn
+            syn.obj.erev_nmda = p.erev_NMDA
             self.esyn.append(syn)
             return syn
 
@@ -186,6 +187,7 @@ class Neuron(object):
             elif syntype ==  'NMDAe_ica_nmda':
                 syn.obj = h.NMDAe_ica_nmda(sec(pos))
 
+            syn.obj.mg = p.Mg
             syn.obj.eta = p.eta
             syn.obj.alpha = p.alpha
             syn.obj.Cdur = p.Cdur
@@ -245,6 +247,7 @@ class Neuron(object):
             else:
                 syn.obj = h.adaptive_my_shom_NMDA(sec(pos))
                 syn.obj.threshold_factor = p.threshold_scale_factor
+                syn.obj.KD2_min = p.KD2_min
 
             syn.obj.mg = p.Mg
             syn.obj.eta = p.eta
@@ -261,16 +264,16 @@ class Neuron(object):
             syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
             syn.obj.learning_rate_w_LTD = p.learning_rate_w_LTD
             syn.obj.learning_rate_thresh_LTP = p.learning_rate_thresh_LTP
-            syn.obj.learning_rate_thresh_LTPl = p.learning_rate_thresh_LTPl
             syn.obj.learning_rate_thresh_LTD = p.learning_rate_thresh_LTD
-            syn.obj.learning_rate_thresh_KD_LTD = p.learning_rate_thresh_KD_LTD
-            syn.obj.KD1 = p.KD1
-            syn.obj.n1 = p.n1
-            syn.obj.KD2 = p.KD2
-            syn.obj.KD2_min = p.KD2_min
-            syn.obj.n2 = p.n2
-            syn.obj.KD_LTD = p.KD_LTD
-            syn.obj.n_LTD = p.n_LTD
+            if syntype in ['adaptive_shom_NMDA_stp','adaptive_my_shom_NMDA']:
+                syn.obj.KD1 = p.KD1
+                syn.obj.n1 = p.n1
+                syn.obj.KD2 = p.KD2
+                syn.obj.n2 = p.n2
+                syn.obj.KD_LTD = p.KD_LTD
+                syn.obj.n_LTD = p.n_LTD
+                syn.obj.learning_rate_thresh_KD_LTD = p.learning_rate_thresh_KD_LTD
+
 
             self.esyn.append(syn)
             return syn
@@ -282,7 +285,7 @@ class Neuron(object):
             syn.obj.eta = p.eta
             syn.obj.alpha = p.alpha
             syn.obj.gmax = p.gmaxNMDA_pf
-            syn.obj.Beta = p.Beta
+            syn.obj.Beta = p.nmda_beta
             syn.obj.Cdur = p.Cdur_pf
             syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
             syn.obj.Erev = p.erev_NMDA
@@ -290,11 +293,11 @@ class Neuron(object):
 
             syn.obj.w0 = p.weight
             syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
-            syn.obj.learning_rate_w_LTD = p.learning_rate_w_LTD_pf
+            syn.obj.learning_rate_w_LTD = p.learning_rate_w_LTD
             syn.obj.learning_rate_thresh_LTP = p.learning_rate_thresh_LTP
             syn.obj.learning_rate_thresh_LTD = p.learning_rate_thresh_LTD
-            syn.obj.KD_LTD = p.KD_LTD_pf
-            syn.obj.n_LTD = p.n_LTD_pf
+            syn.obj.KD_LTD = p.KD_LTD
+            syn.obj.n_LTD = p.n_LTD
 
             self.esyn.append(syn)
             return syn
@@ -330,15 +333,15 @@ class Neuron(object):
            syn.obj.thresh_LTD_0 = p.thresh_LTD
            syn.obj.thresh_LTP_0 = p.thresh_LTP
            syn.obj.hthresh_LTP_0 = p.hthresh_LTP
-           syn.obj.hthresh_LTP_const = p.hthresh_LTP_const
-           syn.obj.n = p.Hill_coefficient
+        #    syn.obj.hthresh_LTP_const = p.hthresh_LTP_const
+           syn.obj.n = p.n1
            syn.obj.LTD_thresh_factor = p.LTD_thresh_factor
            syn.obj.lthresh_LTP_min = p.lthresh_LTP_min
 
            syn.obj.learning_rate_thresh_LTP = p.learning_rate_thresh_LTP
            syn.obj.learning_rate_thresh_LTD = p.learning_rate_thresh_LTD
-           syn.obj.steepness_LTP = p.steepness_LTP
-           syn.obj.steepness_LTD = p.steepness_LTD
+        #    syn.obj.steepness_LTP = p.steepness_LTP
+        #    syn.obj.steepness_LTD = p.steepness_LTD
            self.esyn.append(syn)
            return syn
 
@@ -494,9 +497,9 @@ class Neuron(object):
            syn.obj.eta = p.eta
            syn.obj.alpha = p.alpha
            syn.obj.gmax = p.gmaxNMDA_spillover
-           syn.obj.Beta = p.Beta
+           syn.obj.Beta = p.nmda_beta
            syn.obj.Cdur = p.Cdur
-           syn.obj.n = p.Hill_coefficient
+        #    syn.obj.n = p.Hill_coefficient
            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
            syn.obj.Erev = p.erev_NMDA
            syn.obj.Cmax = p.nmda_Tmax
@@ -508,14 +511,14 @@ class Neuron(object):
            syn.obj.thresh_LTD_0 = p.thresh_LTD
            syn.obj.thresh_LTP_0 = p.thresh_LTP
            syn.obj.hthresh_LTP_0 = p.hthresh_LTP
-           syn.obj.hthresh_LTP_const = p.hthresh_LTP_const
+        #    syn.obj.hthresh_LTP_const = p.hthresh_LTP_const
            syn.obj.LTD_thresh_factor = p.LTD_thresh_factor
            syn.obj.lthresh_LTP_min = p.lthresh_LTP_min
 
            syn.obj.learning_rate_thresh_LTP = p.learning_rate_thresh_LTP
            syn.obj.learning_rate_thresh_LTD = p.learning_rate_thresh_LTD
-           syn.obj.steepness_LTP = p.steepness_LTP
-           syn.obj.steepness_LTD = p.steepness_LTD
+        #    syn.obj.steepness_LTP = p.steepness_LTP
+        #    syn.obj.steepness_LTD = p.steepness_LTD
            self.esyn.append(syn)
            return syn
 
@@ -534,6 +537,65 @@ class Neuron(object):
             syn.obj.n = p.steepness_inh
             syn.obj.tau = p.tau_caint
             syn.obj.sf = p.theta_inh_sf
+
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'adaptive2_homo_inhexp2syn':
+            syn.obj = h.adaptive2_homo_inhexp2syn(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+
+            syn.obj.w0 = p.weight_inh
+            syn.obj.gmax = p.gGABAmax
+            syn.obj.theta = p.theta_inh
+            syn.obj.theta_min = p.theta_min_inh
+            syn.obj.learning_rate = p.learning_rate_inh
+            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
+            syn.obj.n = p.steepness_inh
+            syn.obj.tau = p.tau_caint
+            syn.obj.sf = p.theta_inh_sf
+
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'adaptive2_homo_bcm_inhexp2syn':
+            syn.obj = h.adaptive2_homo_bcm_inhexp2syn(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+
+            syn.obj.w0 = p.weight_inh
+            syn.obj.gmax = p.gGABAmax
+            syn.obj.theta = p.theta_inh
+            syn.obj.theta_min = p.theta_min_inh
+            syn.obj.learning_rate = p.learning_rate_inh
+            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
+            syn.obj.n = p.steepness_inh
+            syn.obj.tau = p.tau_caint
+            syn.obj.sf = p.theta_inh_sf
+
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'adaptive2_hetero_amp_inhexp2syn':
+            syn.obj = h.adaptive2_hetero_amp_inhexp2syn(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+
+            syn.obj.w0 = p.weight_inh
+            syn.obj.gmax = p.gGABAmax
+            syn.obj.theta = p.theta_inh
+            syn.obj.theta_min = p.theta_min_inh
+            syn.obj.learning_rate = p.learning_rate_inh
+            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
+            syn.obj.n = p.steepness_inh
+            syn.obj.n1 = p.steepness_inh_s1
+            syn.obj.tau = p.tau_caint
+            syn.obj.sf = p.theta_inh_sf
+            syn.obj.calcium_amp = p.calcium_amp
 
             self.isyn.append(syn)
             return syn

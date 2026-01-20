@@ -61,7 +61,7 @@ dend_record_list = [3] #[3,4,9,10,21,22,24,26,35,36,51,52]
 dend_stim_list = []#[3,4,9,10,35,36]
 plateau_cluster_list = [3]
 
-plateau_cluster_size = np.arange(1,19,1)
+plateau_cluster_size = np.arange(1,21,1)
 
 vs = []
 vspine = []
@@ -117,7 +117,7 @@ ax_cai_nmda_spine = fig_cai_nmda_spine.add_subplot(111); ax_cai_nmda_spine.set_y
 ax_cai_cali_spine = fig_cai_cali_spine.add_subplot(111); ax_cai_cali_spine.set_ylabel('Cai_nmda + cali spine(mM)'); ax_cai_cali_spine.set_xlabel('t (ms)')
 ax_cai_cati_spine = fig_cai_cati_spine.add_subplot(111); ax_cai_cati_spine.set_ylabel('Cai_nmda + cati spine(mM)'); ax_cai_cati_spine.set_xlabel('t (ms)')
 ax_cai_total_spine = fig_cai_total_spine.add_subplot(111); ax_cai_total_spine.set_ylabel('spine [Ca]$_\mathrm{NMDA}$ + [Ca]$_\mathrm{VGCC}$ ($\mu$M)'); ax_cai_total_spine.set_xlabel('t (ms)')
-colors = sns.color_palette("icefire", 30)
+colors = sns.color_palette("icefire", 21)
 
 add_spine = 0
 on_spine = 1
@@ -129,12 +129,16 @@ cell.insert_spines(plateau_cluster_list, start_pos, end_pos, num_spines = p.plat
 #cell.dendlist[57].diam = 0.3
 sns.set_style("ticks")
 ci = 0
+num_syns = 10
+weight = 5.0
 for num_syns in plateau_cluster_size:
-#for num_syns in [5,6,10,12]:
+# for weight in [ 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5]:
+    p.gmaxNMDA_spillover = weight*1e-3
+    p.gmaxNMDAe_spillover = weight*1e-3
 #    cell = msn.MSN(variables = variables)
     ex = pe.Plasticity_Experiment('record_ca', cell)
-    # ex.insert_synapses('MSN')
-    ex.insert_synapses('no_spillover', plateau_cluster_list, deterministic = 0,
+    ex.insert_synapses('MSN')
+    ex.insert_synapses('my_spillover', plateau_cluster_list, deterministic = 0,
                        num_syns = num_syns, add_spine = add_spine, on_spine = on_spine)
 #    ex.insert_synapses('input_syn', deterministic = 1,
 #                       num_syns = p.distributed_input_size*2, add_spine = 0, on_spine = 0)

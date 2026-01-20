@@ -176,7 +176,7 @@ BREAKPOINT {
         } else {
 	  if (last_dopamine == 1 && active_syn_flag == 1) {
                  
-                 delta_LTP = sigmoidal(ca_nmdai_max, lthresh_LTP, steepness_LTP) * (1 - sigmoidal(ca_nmdai_max, lthresh_LTP, steepness_LTP))
+                  delta_LTP = sigmoidal(ca_nmdai_max, lthresh_LTP, steepness_LTP) * (1 - sigmoidal(ca_nmdai_max, lthresh_LTP, steepness_LTP))
 		  weight = weight + learning_rate_w_LTP * delta_LTP
 		  lthresh_LTP = lthresh_LTP + learning_rate_thresh_LTP * delta_LTP * (1 - 2*sigmoidal(ca_nmdai_max, lthresh_LTP, steepness_LTP))
           

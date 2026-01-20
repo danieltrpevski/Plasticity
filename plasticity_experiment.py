@@ -19,6 +19,7 @@ import pickle
 import scipy.signal as ss
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 if p.connectivity == 'random' and p.rnd_exptype == 'spillover':
     import bisect
 
@@ -1389,7 +1390,8 @@ class Plasticity_Experiment(e.Experiment):
 
                 colormap = plt.cm.viridis; cmax = self.cell.max_dist()
                 scalar_map = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=0, vmax=cmax))
-                plt.colorbar(scalar_map, label='Distance ($\mathrm{\mu}$m)')
+                plt.colorbar(scalar_map, ax = ax_agh[-1],
+                             label='Distance ($\mathrm{\mu}$m)')
 
                 figs_cali_agh.append(plt.figure())
                 ax_cali_agh.append(figs_cali_agh[-1].add_subplot(111))
@@ -1397,7 +1399,8 @@ class Plasticity_Experiment(e.Experiment):
 
                 colormap = plt.cm.viridis; cmax = self.cell.max_dist()
                 scalar_map = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=0, vmax=cmax))
-                plt.colorbar(scalar_map, label='Distance ($\mathrm{\mu}$m)')
+                plt.colorbar(scalar_map, ax = ax_cali_agh[-1],
+                             label='Distance ($\mathrm{\mu}$m)')
 
                 figs_cai_agh.append(plt.figure())
                 ax_cai_agh.append(figs_cai_agh[-1].add_subplot(111))
@@ -1405,7 +1408,8 @@ class Plasticity_Experiment(e.Experiment):
 
                 colormap = plt.cm.viridis; cmax = self.cell.max_dist()
                 scalar_map = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=0, vmax=cmax))
-                plt.colorbar(scalar_map, label='Distance ($\mathrm{\mu}$m)')
+                plt.colorbar(scalar_map, ax = ax_cai_agh[-1],
+                             label='Distance ($\mathrm{\mu}$m)')
 
                 figs_lthresh_LTP_agh.append(plt.figure())
                 ax_lthresh_LTP_agh.append(figs_lthresh_LTP_agh[-1].add_subplot(111))
@@ -1414,7 +1418,8 @@ class Plasticity_Experiment(e.Experiment):
 
                 colormap = plt.cm.viridis; cmax = self.cell.max_dist()
                 scalar_map = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=0, vmax=cmax))
-                plt.colorbar(scalar_map, label='Distance ($\mathrm{\mu}$m)')
+                plt.colorbar(scalar_map, ax = ax_lthresh_LTP_agh[-1],
+                             label='Distance ($\mathrm{\mu}$m)')
 
                 figs_lthresh_LTD_agh.append(plt.figure())
                 ax_lthresh_LTD_agh.append(figs_lthresh_LTD_agh[-1].add_subplot(111))
@@ -1423,7 +1428,8 @@ class Plasticity_Experiment(e.Experiment):
 
                 colormap = plt.cm.viridis; cmax = self.cell.max_dist()
                 scalar_map = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=0, vmax=cmax))
-                plt.colorbar(scalar_map, label='Distance ($\mathrm{\mu}$m)')
+                plt.colorbar(scalar_map, ax = ax_lthresh_LTD_agh[-1],
+                             label='Distance ($\mathrm{\mu}$m)')
 #
                 # figs_cai_nmda_agh.append(plt.figure())
                 # ax_cai_nmda_agh.append(figs_cai_nmda_agh[-1].add_subplot(111))
@@ -1439,7 +1445,8 @@ class Plasticity_Experiment(e.Experiment):
 
                 colormap = plt.cm.viridis; cmax = self.cell.max_dist()
                 scalar_map = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=0, vmax=cmax))
-                plt.colorbar(scalar_map, label='Distance ($\mathrm{\mu}$m)')
+                plt.colorbar(scalar_map, ax = ax_v_agh[-1],
+                             label='Distance ($\mathrm{\mu}$m)')
 
                 if p.connectivity == 'random':
                     sa = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
@@ -1474,13 +1481,13 @@ class Plasticity_Experiment(e.Experiment):
                         inds, peaks = ss.find_peaks(cai_agh[i].to_python(), height = 0.0001)
                         inds2 = inds[3::4]; peaks2 = peaks['peak_heights'][3::4]
                         tinds = np.asarray(self.tout)[list(inds2)]
-                        if (i%20 == 0):
+                        if (i%p.max_ca_step_dist == 0):
                             ax_lthresh_LTP_agh[-1].plot(tinds, peaks2*1000, color = color, linestyle = '', marker = 'o', markersize = 2.0)
 
                         inds, peaks = ss.find_peaks(cali_agh[i].to_python(), height = 0.0001)
                         inds2 = inds[3::4]; peaks2 = peaks['peak_heights'][3::4]
                         tinds = np.asarray(self.tout)[list(inds2)]
-                        if (i%20 == 0):
+                        if (i%p.max_ca_step_dist == 0):
                             ax_lthresh_LTD_agh[-1].plot(tinds, peaks2*1000, color = color, linestyle = '', marker = 'o', markersize = 2.0)
             else:
                 num_groups = 4
@@ -3104,6 +3111,9 @@ class Plasticity_Experiment(e.Experiment):
                         h.setpointer(syn2.obj._ref_weight, 'weight', syn1.obj)
                         if p.random_initial_weights:
                             syn2.obj.w0 = rnd.uniform(p.start_weight, p.end_weight)
+                        syn2.obj.learning_rate_w_LTP = p.learning_rate_w_LTP/4
+                        syn2.obj.learning_rate_w_LTD = p.learning_rate_w_LTD/4
+                        syn2.obj.learning_rate_thresh_LTD = 0.0
                         syn2.obj.learning_rate_thresh_LTD = 0.0
                         syn1.source = 'distributed'
                         syn2.source = 'distributed'
