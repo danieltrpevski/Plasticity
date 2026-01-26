@@ -44,7 +44,7 @@ class Plasticity_Experiment(e.Experiment):
 
     def insert_synapses(self, syntype, syn_loc = [], deterministic = 0,
                         num_syns = p.distributed_input_size, add_spine = 0, on_spine = 0):
-        if syntype in ['expsyn',  'inhexpsyn']:
+        if syntype in ['expsyn',  'inhexpsyn', 'inhexp2syn_caint']:
             if syntype in ['expsyn']:
                 num_syns = p.distributed_input_size
             elif syntype == 'inhexpsyn':
@@ -82,45 +82,49 @@ class Plasticity_Experiment(e.Experiment):
                 syn = self.cell.insert_synapse('expsyn',self.cell.dendlist[loc],  p.pos, add_spine = add_spine, on_spine = on_spine)
                 self.add_input_generator(syn, syntype)
 
-        elif syntype == 'MSN':
+        elif syntype in ['noise_SPN', 'inhibitory_plasticity']:
             for dend in self.cell.dendlist:
                 # Synapses according to Cheng et al. Experimental Neurobiology, 147:287-298 (1997)
                 unit_length = 20.0 # Values reported in units per 20 microns in the study
                 [exc_mean, exc_sem, inh_mean, inh_sem] = self.synapse_distribution(self.celltype, dend)
                 # Insert excitatory synapses in this section,
                 # This contains both an exponential and an NMDA synapse.
-                syntype = 'glutamate'
+                stype = 'glutamate'
                 if dend.nseg <= exc_mean:
                     freq_multiplier = exc_mean/dend.nseg
                     step = 1/dend.nseg
                     for i in range(0, dend.nseg):
                         pos = (i + (i+1))*step/2
-                        self.helper_insert(syntype, pos, dend, freq_multiplier)
+                        self.helper_insert(stype, pos, dend, freq_multiplier)
                 else:
                     num_exc_syn = int(dend.L/unit_length * rnd.gauss(exc_mean,exc_sem))
                     freq_multiplier = 1.0
                     for i in range(0,num_exc_syn):
                         pos = rnd.uniform(0,1)
-                        self.helper_insert(syntype, pos, dend, freq_multiplier)
+                        self.helper_insert(stype, pos, dend, freq_multiplier)
 
                 # Insert inhibitory synapses in this section
-                syntype = 'inhexp2syn'
+                if syntype == 'noise_SPN':
+                    stype = 'inhexp2syn'
+                elif syntype == 'inhibitory_plasticity':
+                    stype = 'adaptive_inhexp2syn'
+
                 if dend.nseg <= inh_mean:
                     freq_multiplier = inh_mean/dend.nseg
                     step = 1/dend.nseg
                     for i in range(0, dend.nseg):
                         pos = (i + (i+1))*step/2
-                        self.helper_insert(syntype, pos, dend, freq_multiplier)
+                        self.helper_insert(stype, pos, dend, freq_multiplier)
                 else:
                     num_inh_syn = int(dend.L/unit_length * rnd.gauss(inh_mean,inh_sem))
                     freq_multiplier = 1.0
                     for i in range(0,num_inh_syn):
                         pos = rnd.uniform(0,1)
-                        self.helper_insert(syntype, pos, dend, freq_multiplier)
+                        self.helper_insert(stype, pos, dend, freq_multiplier)
 
         elif syntype in ['plateau_cluster', 'inhexpsyn_plateau', 'generalized_rule',
                          'spillover', 'spillover_test', 'no_spillover', 'my_spillover',
-                          'no_spillover_stp', 'my_spillover_stp']:
+                          'no_spillover_stp', 'my_spillover_stp', 'inhexp2syn_plateau']:
             if syntype == 'plateau_cluster':
                 syntype = 'tmGlut'
             elif syntype == 'spillover':
@@ -130,7 +134,9 @@ class Plasticity_Experiment(e.Experiment):
                 self.exglu.append(h.IntFire1(self.exglusec[-1](0.5)))
                 self.exglu[-1].tau = p.exglu_tau
                 self.exglu[-1].refrac = p.session_length
-#                h.setpointer(h._ref_stimulus_flag, 'stimulus_flag', self.exglusec[-1].exglu)
+            elif syntype == 'inhexp2syn_plateau':
+                syntype = 'inhexp2syn_caint'
+
             for num,loc in enumerate(syn_loc):
                 syn_step = 1.0/num_syns
                 cluster_start_pos = p.cluster_start_poss[p.independent_dends.index(loc)]
@@ -154,6 +160,7 @@ class Plasticity_Experiment(e.Experiment):
                         syn = self.cell.insert_synapse(syntype, self.cell.dendlist[loc],
                                                        pos, add_spine = add_spine, on_spine = on_spine)
                         self.add_input_generator(syn, syntype, deterministic = deterministic, tstart = start)
+                        syn.clustered_flag = True
                         if syntype == 'generalized_rule':
                             h.setpointer(h._ref_dopamine, 'dopamine', syn.obj)
                             h.setpointer(h._ref_stimulus_flag, 'stimulus_flag', syn.obj)
@@ -248,7 +255,11 @@ class Plasticity_Experiment(e.Experiment):
             elif syntype in ['inhexpsyn_plateau']:
                 weight = p.gGABAmax_plateau
                 number = 1
-            elif syntype in [ 'inhexp2syn', 'adaptive_inhexp2syn', 'adaptive2_inhexp2syn']:
+            elif syntype in ['inhexp2syn_caint']:
+                weight = p.gGABAmax_plateau
+                number = p.num_inh_spikes
+            elif syntype in [ 'inhexp2syn', 'adaptive_inhexp2syn', 'adaptive2_inhexp2syn',
+                              'adaptive2_homo_inhexp2syn', 'adaptive2_hetero_inhexp2syn']:
                 weight = p.gGABA_max
 
         elif deterministic == 0:
@@ -260,15 +271,15 @@ class Plasticity_Experiment(e.Experiment):
                 interval = p.ramp_syn_interval
                 weight = p.g_ramp_max
 
-            elif syntype in ['inhexpsyn', 'inhexp2syn']:
+            elif syntype in ['inhexpsyn', 'inhexp2syn', 'adaptive_inhexp2syn']:
                 start = 0;
                 end = p.simtime
                 number = (end-start) * p.irate * freq_multiplier
                 interval = p.i_interval/freq_multiplier
                 weight = p.g_inhexpsyn_max
 
-            elif syntype in ['inhexpsyn_plateau']:
-                start = tstart
+            elif syntype in ['inhexpsyn_plateau', 'inhexp2syn_caint']:
+                start = p.inhibitory_burst_start
                 end = p.inhibitory_burst_end
                 number = p.num_inh_spikes
                 interval = 0
@@ -287,11 +298,11 @@ class Plasticity_Experiment(e.Experiment):
                             'adaptive_addhom_NMDA', 'AMPA_test', 'NMDA_test','adaptive_NMDAe',
                             'adaptive_shom_AMPA', 'adaptive_shom_NMDA', 'adaptive_my_shom_NMDA',
                             'adaptive_shom_AMPA_stp', 'adaptive_shom_NMDA_stp',
-                            'adaptive_glutamate_shom',
+                            'adaptive_glutamate_shom', 'adaptive2_inhexp2syn',
+                            'adaptive2_homo_inhexp2syn', 'adaptive2_hetero_inhexp2syn',
                             'adaptive_cshom_AMPA', 'adaptive_cshom_NMDA',
                             'adaptive_glutamate_cshom', 'adaptive_sglutamate', 'NMDAe',
-                            'adaptive_zahra_NMDA','adaptive_pf_AMPA', 'adaptive_pf_NMDA',
-                            'adaptive2_inhexp2syn']:
+                            'adaptive_zahra_NMDA','adaptive_pf_AMPA', 'adaptive_pf_NMDA']:
                 start = tstart; end = tend
                 number = p.num_spikes#(end-start) * p.plateau_syn_rate
                 interval = p.deterministic_interval#p.plateau_syn_interval
@@ -306,7 +317,7 @@ class Plasticity_Experiment(e.Experiment):
                     weight = p.gNMDAmax
                 elif syntype in ['NMDA', 'AMPA', 'NMDA_stp', 'AMPA_stp',  'NMDA_ica_nmda']:
                     weight = p.weight
-                elif syntype in ['adaptive2_inhexp2syn']:
+                elif syntype in ['adaptive2_inhexp2syn', 'adaptive2_homo_inhexp2syn', 'adaptive2_hetero_inhexp2syn']:
                     number = p.num_inh_spikes
 
             elif syntype in ['input_syn']:
@@ -352,20 +363,23 @@ class Plasticity_Experiment(e.Experiment):
             syn.stim.append(gen)
             syn.nc.append(nc)
 
-        elif syntype in ['expsyn', 'exp2syn', 'plateau_cluster', 'input_syn',
-        'expsyn_plateau', 'nmda_plateau', 'tmGlut', 'glutamate',
-        'adaptive_glutamate', 'glutamate_ica_nmda', 'glutamate_plateau',
-        'pf', 'NMDA_ica_nmda', 'NMDAe_ica_nmda',
-        'AMPA', 'NMDA', 'NMDAe', 'adaptive_AMPA', 'NMDA_stp', 'AMPA_stp',
-        'adaptive_NMDA', 'adaptive_hom_AMPA', 'adaptive_hom_NMDA', 'adaptive_ahom_NMDA',
-        'AMPA_test', 'NMDA_test','adaptive_shom_AMPA', 'adaptive_shom_NMDA',
-        'adaptive_shom_AMPA_stp', 'adaptive_shom_NMDA_stp', 'adaptive_my_shom_NMDA',
-        'adaptive_NMDAe', 'adaptive_glutamate_shom','adaptive_cshom_AMPA',
-        'adaptive_cshom_NMDA','adaptive_glutamate_cshom', 'adaptive_sAMPA', 'adaptive_sNMDA',
-        'adaptive_sglutamate', 'adaptive_zahra_NMDA', 'AMPA_pf', 'NMDA_pf',
-        'adaptive2_inhexp2syn', 'adaptive_addhom_NMDA']:
-            syn.stim.append(gen)
-            syn.nc.append(nc)
+        elif syntype in ['inhexpsyn', 'inhexp2syn', 'adaptive_inhexp2syn', 'inhexp2syn_caint',
+                         'adaptive2_inhexp2syn','inhexpsyn_plateau', 'adaptive2_homo_inhexp2syn',
+                         'adaptive2_hetero_inhexp2syn',
+                         'expsyn', 'exp2syn', 'plateau_cluster', 'input_syn',
+                         'expsyn_plateau', 'nmda_plateau', 'tmGlut', 'glutamate',
+                         'adaptive_glutamate', 'glutamate_ica_nmda', 'glutamate_plateau',
+                         'pf', 'NMDA_ica_nmda', 'NMDAe_ica_nmda',
+                         'AMPA', 'NMDA', 'NMDAe', 'adaptive_AMPA', 'NMDA_stp', 'AMPA_stp',
+                         'adaptive_NMDA', 'adaptive_hom_AMPA', 'adaptive_hom_NMDA', 'adaptive_ahom_NMDA',
+                         'AMPA_test', 'NMDA_test','adaptive_shom_AMPA', 'adaptive_shom_NMDA',
+                         'adaptive_shom_AMPA_stp', 'adaptive_shom_NMDA_stp', 'adaptive_my_shom_NMDA',
+                         'adaptive_NMDAe', 'adaptive_glutamate_shom','adaptive_cshom_AMPA',
+                         'adaptive_cshom_NMDA','adaptive_glutamate_cshom', 'adaptive_sAMPA', 'adaptive_sNMDA',
+                         'adaptive_sglutamate', 'adaptive_zahra_NMDA', 'AMPA_pf', 'NMDA_pf',
+                         'adaptive2_inhexp2syn', 'adaptive_addhom_NMDA']:
+             syn.stim.append(gen)
+             syn.nc.append(nc)
 
     def set_up_recording(self, dend_record_list = [], record_step = p.record_step):
         self.dend_record_list = dend_record_list
@@ -420,7 +434,9 @@ class Plasticity_Experiment(e.Experiment):
                             'xor_spillover', 'xor_sspillover', 'xor_hom_spillover', 'xor_hom_spillover_fNMDA',
                             'xor_spillover_test', 'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                             'xor_shom_spillover','xor_cshom_spillover', 'xor_zahra_spillover',
-                            'xor_ahom_spillover', 'xor_addhom_spillover', 'nfbp_inh', 'fbp']:
+                            'xor_ahom_spillover', 'xor_addhom_spillover', 'nfbp_inh', 'fbp',
+                            'inhibitory_plasticity', 'pattern', 'pattern_homo',
+                            'pattern_hetero', 'pattern_hetero_amp', 'pattern_cont_hetero_amp']:
 
             # self.ica = []
             if type(dend_record_list) == list:
@@ -449,109 +465,138 @@ class Plasticity_Experiment(e.Experiment):
                             self.vdlist.append({'sec': loc, 'pos': pos, 'data': h.Vector()})
                             self.vdlist[-1]['data'].record(self.cell.dendlist[loc](pos)._ref_v, p.record_step_v)
 
-            if self.exptype in ['xor']:
-                synlist = self.get_synapse_list('adaptive_glutamate2', clustered_flag = True)
-            elif self.exptype == 'xor_hom':
-                synlist = self.get_synapse_list('adaptive_glutamate_hom', clustered_flag = True)
-            elif self.exptype == 'xor_gen':
-                synlist = self.get_synapse_list('generalized_rule', clustered_flag = True)
-            elif self.exptype == 'xor_spillover':
-                synlist = self.get_synapse_list('adaptive_AMPA', clustered_flag = True)
-            elif self.exptype == 'xor_sspillover':
-                synlist = self.get_synapse_list('adaptive_sAMPA', clustered_flag = True)
-            elif self.exptype in ['xor_hom_spillover', 'nfbp_inh']:
-                synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
-            elif self.exptype in ['fbp'] and p.connectivity == 'clustered':
-                synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
-            elif self.exptype in ['fbp'] and p.connectivity == 'random':
-                synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
-            elif self.exptype in ['xor_addhom_spillover']:
-                synlist = self.get_synapse_list('adaptive_addhom_NMDA', clustered_flag = True)
-            elif self.exptype == 'xor_ahom_spillover':
-                synlist = self.get_synapse_list('adaptive_ahom_NMDA', clustered_flag = True)
-            elif self.exptype == 'xor_hom_spillover_fNMDA':
-                synlist = self.get_synapse_list('adaptive_hom_AMPA_fNMDA', clustered_flag = True)
-            elif self.exptype in ['xor_shom_spillover']:
-                synlist = self.get_synapse_list('adaptive_shom_NMDA', clustered_flag = True)
-            elif self.exptype in ['xor_shom_my_spillover']:
-                synlist = self.get_synapse_list('adaptive_my_shom_NMDA', clustered_flag = True)
-            elif self.exptype == 'xor_shom_my_spillover_stp':
-                synlist = self.get_synapse_list('adaptive_shom_NMDA_stp', clustered_flag = True)
-            elif self.exptype == 'xor_zahra_spillover':
-                synlist = self.get_synapse_list('adaptive_zahra_NMDA', clustered_flag = True)
-            elif self.exptype == 'xor_cshom_spillover':
-                synlist = self.get_synapse_list('adaptive_cshom_NMDA', clustered_flag = True)
-            elif self.exptype == 'xor_test_set':
-                synlist = self.get_synapse_list('glutamate_xor_test', clustered_flag = True)
-            elif self.exptype == 'xor_spillover_test':
-                synlist = self.get_synapse_list('glutamate_xor_test', clustered_flag = True)
-            synlist.sort(key = lambda f: f.sec.name())
-
-            self.cai_nmda_in_syns = []
-            self.cai_in_syns = []
-            self.cali_in_syns = []
-            self.cati_in_syns = []
-            self.ica_in_syns = []
-            if not p.long_simulation:
-                for s in synlist:
-                    # self.cai_nmda_in_syns.append(h.Vector())
-                    # self.cai_nmda_in_syns[-1].record(s.sec(s.pos)._ref_ca_nmdai, record_step)
-                    self.cali_in_syns.append(h.Vector())
-                    self.cali_in_syns[-1].record(s.sec(s.pos)._ref_cali, record_step)
-    #                self.cati_in_syns.append(h.Vector())
-    #                self.cati_in_syns[-1].record(s.sec(s.pos)._ref_cati, record_step)
-                    self.cai_in_syns.append(h.Vector())
-                    self.cai_in_syns[-1].record(s.sec(s.pos)._ref_cai, record_step)
-                    # self.ica_in_syns.append(h.Vector())
-                    # self.ica_in_syns[-1].record(s.sec(s.pos)._ref_ica, record_step)
-                    # s.ref_var_cai_nmda = self.cai_nmda_in_syns[-1]
-                    s.ref_var_cali = self.cali_in_syns[-1]
-                    s.ref_var_cai = self.cai_in_syns[-1]
-                self.dopamine_vec = h.Vector()
-                self.dopamine_vec.record(h._ref_dopamine, record_step)
-
-            if self.exptype in ['xor_spillover','xor_hom_spillover', 'xor_gen','xor_shom_spillover',
-                                'xor_cshom_spillover', 'xor_sspillover', 'xor_zahra_spillover',
-                                'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
-                                'xor_hom_spillover_fNMDA', 'xor_ahom_spillover',
-                                'xor_addhom_spillover', 'nfbp_inh', 'fbp']:
-                self.cali_dend = []
-                self.cai_dend = []
-                self.cai_nmda_dend = []
-                self.cati_dend = []
-
-                if not p.long_simulation:
-                    for d in dend_record_list:
-                        # self.cai_nmda_dend.append(h.Vector())
-                        self.cali_dend.append(h.Vector())
-#                        self.cati_dend.append(h.Vector())
-                        self.cai_dend.append(h.Vector())
-                        pos = p.cluster_start_poss[p.independent_dends.index(d)]
-                        # self.cai_nmda_dend[-1].record(self.cell.dendlist[d](p.pos)._ref_ca_nmdai, record_step)
-                        self.cali_dend[-1].record(self.cell.dendlist[d](pos)._ref_cali, record_step)
-#                        self.cati_dend[-1].record(self.cell.dendlist[d](p.pos)._ref_cati, record_step)
-                        self.cai_dend[-1].record(self.cell.dendlist[d](pos)._ref_cai, record_step)
-                    # for s in synlist:
-                    #     self.kernel.append(h.Vector())
-                    #     self.kernel[-1].record(s.obj._ref_kernel, record_step)
-                    #     self.kernel_LTD.append(h.Vector())
-                    #     self.kernel_LTD[-1].record(s.obj._ref_kernel_LTD, record_step)
+            if p.mpi:
+                pass
+            else:
+                if self.exptype in ['inhibitory_plasticity', 'nfbp_inh', 'pattern',
+                                    'pattern_homo', 'pattern_hetero', 'pattern_hetero_amp',
+                                    'pattern_cont_hetero_amp']:
                     self.m = []
-                    for intfire in self.exglu:
-                        self.m.append(h.Vector())
-                        self.m[-1].record(intfire._ref_m, record_step)
-                    if p.connectivity == 'random' and p.rnd_exptype == 'spillover':
-                        self.mlist = []
-                        for intfire in self.exglu_list:
-                            self.mlist.append([])
-                            for i in intfire:
-                                self.mlist[-1].append(h.Vector())
-                                self.mlist[-1][-1].record(i._ref_m, record_step)
+
+                    if self.exptype not in ['inhibitory_plasticity']:
+                        self.stimulus_flag = h.Vector()
+                        self.stimulus_flag.record(h._ref_stimulus_flag, record_step)
+                        self.weight_update_flag = h.Vector()
+                        self.weight_update_flag.record(h._ref_weight_update_flag, record_step)
+
+                        for intfire in self.exglu:
+                            self.m.append(h.Vector())
+                            self.m[-1].record(intfire._ref_m, record_step)
+
+                if self.exptype in ['xor']:
+                    synlist = self.get_synapse_list('adaptive_glutamate2', clustered_flag = True)
+                elif self.exptype == 'xor_hom':
+                    synlist = self.get_synapse_list('adaptive_glutamate_hom', clustered_flag = True)
+                elif self.exptype == 'xor_gen':
+                    synlist = self.get_synapse_list('generalized_rule', clustered_flag = True)
+                elif self.exptype == 'xor_spillover':
+                    synlist = self.get_synapse_list('adaptive_AMPA', clustered_flag = True)
+                elif self.exptype == 'xor_sspillover':
+                    synlist = self.get_synapse_list('adaptive_sAMPA', clustered_flag = True)
+                elif self.exptype in ['xor_hom_spillover', 'nfbp_inh']:
+                    synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+                elif self.exptype in ['fbp'] and p.connectivity == 'clustered':
+                    synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+                elif self.exptype in ['fbp'] and p.connectivity == 'random':
+                    synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
+                elif self.exptype in ['xor_addhom_spillover']:
+                    synlist = self.get_synapse_list('adaptive_addhom_NMDA', clustered_flag = True)
+                elif self.exptype == 'xor_ahom_spillover':
+                    synlist = self.get_synapse_list('adaptive_ahom_NMDA', clustered_flag = True)
+                elif self.exptype == 'xor_hom_spillover_fNMDA':
+                    synlist = self.get_synapse_list('adaptive_hom_AMPA_fNMDA', clustered_flag = True)
+                elif self.exptype in ['xor_shom_spillover']:
+                    synlist = self.get_synapse_list('adaptive_shom_NMDA', clustered_flag = True)
+                elif self.exptype in ['xor_shom_my_spillover']:
+                    synlist = self.get_synapse_list('adaptive_my_shom_NMDA', clustered_flag = True)
+                elif self.exptype == 'xor_shom_my_spillover_stp':
+                    synlist = self.get_synapse_list('adaptive_shom_NMDA_stp', clustered_flag = True)
+                elif self.exptype == 'xor_zahra_spillover':
+                    synlist = self.get_synapse_list('adaptive_zahra_NMDA', clustered_flag = True)
+                elif self.exptype == 'xor_cshom_spillover':
+                    synlist = self.get_synapse_list('adaptive_cshom_NMDA', clustered_flag = True)
+                elif self.exptype == 'xor_test_set':
+                    synlist = self.get_synapse_list('glutamate_xor_test', clustered_flag = True)
+                elif self.exptype == 'xor_spillover_test':
+                    synlist = self.get_synapse_list('glutamate_xor_test', clustered_flag = True)
+                synlist.sort(key = lambda f: f.sec.name())
+
+                self.cai_nmda_in_syns = []
+                self.cai_in_syns = []
+                self.cali_in_syns = []
+                self.cati_in_syns = []
+                self.ica_in_syns = []
+                if not p.long_simulation:
+                    for s in synlist:
+                        # self.cai_nmda_in_syns.append(h.Vector())
+                        # self.cai_nmda_in_syns[-1].record(s.sec(s.pos)._ref_ca_nmdai, record_step)
+                        self.cali_in_syns.append(h.Vector())
+                        self.cali_in_syns[-1].record(s.sec(s.pos)._ref_cali, record_step)
+        #                self.cati_in_syns.append(h.Vector())
+        #                self.cati_in_syns[-1].record(s.sec(s.pos)._ref_cati, record_step)
+                        self.cai_in_syns.append(h.Vector())
+                        self.cai_in_syns[-1].record(s.sec(s.pos)._ref_cai, record_step)
+                        # self.ica_in_syns.append(h.Vector())
+                        # self.ica_in_syns[-1].record(s.sec(s.pos)._ref_ica, record_step)
+                        # s.ref_var_cai_nmda = self.cai_nmda_in_syns[-1]
+                        s.ref_var_cali = self.cali_in_syns[-1]
+                        s.ref_var_cai = self.cai_in_syns[-1]
+                        if self.exptype not in ['inhibitory_plasticity', 'pattern', 'pattern_homo', 'pattern_hetero', 'pattern_hetero_amp',
+                                                'pattern_cont_hetero_amp']:
+                            self.cai_nmda_max.append(h.Vector())
+                            self.cai_nmda_max[-1].record(s.obj._ref_ca_nmdai_max, record_step)
+                            self.cali_max.append(h.Vector())
+                            self.cali_max[-1].record(s.obj._ref_cali_max, record_step)
+
+                    if self.exptype not in ['inhibitory_plasticity', 'pattern', 'pattern_homo', 'pattern_hetero', 'pattern_hetero_amp',
+                                            'pattern_cont_hetero_amp']:
+
+                        self.dopamine_vec = h.Vector()
+                        self.dopamine_vec.record(h._ref_dopamine, record_step)
+
+                if self.exptype in ['xor_spillover','xor_hom_spillover', 'xor_gen','xor_shom_spillover',
+                                    'xor_cshom_spillover', 'xor_sspillover', 'xor_zahra_spillover',
+                                    'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
+                                    'xor_hom_spillover_fNMDA', 'xor_ahom_spillover',
+                                    'xor_addhom_spillover', 'nfbp_inh', 'fbp']:
+                    self.cali_dend = []
+                    self.cai_dend = []
+                    self.cai_nmda_dend = []
+                    self.cati_dend = []
+
+                    if not p.long_simulation:
+                        for d in dend_record_list:
+                            self.cai_nmda_dend.append(h.Vector())
+                            self.cali_dend.append(h.Vector())
+    #                        self.cati_dend.append(h.Vector())
+                            self.cai_dend.append(h.Vector())
+                            pos = p.cluster_start_poss[p.independent_dends.index(d)]
+                            # self.cai_nmda_dend[-1].record(self.cell.dendlist[d](p.pos)._ref_ca_nmdai, record_step)
+                            self.cali_dend[-1].record(self.cell.dendlist[d](pos)._ref_cali, record_step)
+    #                        self.cati_dend[-1].record(self.cell.dendlist[d](p.pos)._ref_cati, record_step)
+                            self.cai_dend[-1].record(self.cell.dendlist[d](pos)._ref_cai, record_step)
+                        # for s in synlist:
+                        #     self.kernel.append(h.Vector())
+                        #     self.kernel[-1].record(s.obj._ref_kernel, record_step)
+                        #     self.kernel_LTD.append(h.Vector())
+                        #     self.kernel_LTD[-1].record(s.obj._ref_kernel_LTD, record_step)
+                        self.m = []
+                        for intfire in self.exglu:
+                            self.m.append(h.Vector())
+                            self.m[-1].record(intfire._ref_m, record_step)
+                        if p.connectivity == 'random' and p.rnd_exptype == 'spillover':
+                            self.mlist = []
+                            for intfire in self.exglu_list:
+                                self.mlist.append([])
+                                for i in intfire:
+                                    self.mlist[-1].append(h.Vector())
+                                    self.mlist[-1][-1].record(i._ref_m, record_step)
 
         if self.exptype in ['record_ca', 'record_ca_dist']:
             self.m = []
             self.ica_nmda = []
             self.ica_spine = []
+            self.caint = []
 
             self.cai_soma = h.Vector()
             self.cai_soma.record(self.cell.somalist[0](0.5)._ref_cai, record_step)
@@ -575,10 +620,10 @@ class Plasticity_Experiment(e.Experiment):
                     self.cai_nmda[-1].record(self.cell.dendlist[d](pos)._ref_ca_nmdai, record_step)
                     # self.cali_dend[-1].record(self.cell.dendlist[d](pos)._ref_cali, record_step
                     if self.cell.spines != []:
-
                         self.record_spinelist = [s for s in self.cell.spines if s.parent == self.cell.dendlist[d] and s.syn_on == 1]
                         if p.include_empty_spines:
                             self.record_spinelist.extend([s for s in self.cell.spines if s.parent == self.cell.dendlist[d] and s.syn_on == 0])
+                        print("In record_ca: recording from %d spines" % len(self.record_spinelist))
                         for spine in self.record_spinelist:
     #                    spine = self.record_spinelist[0]
                             self.vspine.append(h.Vector())
@@ -598,6 +643,10 @@ class Plasticity_Experiment(e.Experiment):
                                 self.cai_nmda_spine[-1].record(spine.head(0.5)._ref_ca_nmdai, record_step)
 
                             print("Length of record_spinelist = ", len(self.record_spinelist), "len(self.vspine) = ", len(self.vspine))
+
+                synlist = self.get_synapse_list('inhexp2syn_caint', clustered_flag = True, drive_type = 'i')
+                self.caint.append(h.Vector())
+                self.caint[-1].record(synlist[0].obj._ref_caint, record_step)
 
             elif self.exptype == 'record_ca_dist':
                 self.record_spinelist = self.cell.spines
@@ -625,7 +674,9 @@ class Plasticity_Experiment(e.Experiment):
 
                     print("Length of record_spinelist = ", len(self.record_spinelist), "len(self.vspine) = ", len(self.vspine))
 
-        if self.exptype in ['nfbp_inh']:
+        if self.exptype in ['inhibitory_plasticity','record_ca', 'nfbp_inh',
+                            'pattern', 'pattern_homo', 'pattern_hetero', 'pattern_hetero_amp',
+                            'pattern_cont_hetero_amp'] and not p.mpi:
 
             self.w_inh = []
             self.theta_inh = []
@@ -633,6 +684,7 @@ class Plasticity_Experiment(e.Experiment):
             self.theta_min_inh = []
             self.kernel_inh = []
             self.caint_syns = []
+            self.caint_max = []
             self.tlast = []
             self.delta_t = []
             self.asf = []
@@ -641,38 +693,78 @@ class Plasticity_Experiment(e.Experiment):
                     self.w_inh.append(h.Vector())
                     self.w_inh[-1].record(s.obj._ref_weight, record_step)
                     s.ref_var_w_inh = self.w_inh[-1]
-                    self.kernel_inh.append(h.Vector())
-                    self.kernel_inh[-1].record(s.obj._ref_kernel, record_step)
+                    # self.kernel_inh.append(h.Vector())
+                    # self.kernel_inh[-1].record(s.obj._ref_kernel, record_step)
                 if s.type in ['adaptive2_inhexp2syn']:
                     self.w_inh.append(h.Vector())
                     self.w_inh[-1].record(s.obj._ref_weight, p.record_step_thresh)
                     s.ref_var_w_inh = self.w_inh[-1]
-                    self.kernel_inh.append(h.Vector())
-                    self.kernel_inh[-1].record(s.obj._ref_kernel, record_step)
+                    # self.kernel_inh.append(h.Vector())
+                    # self.kernel_inh[-1].record(s.obj._ref_kernel, record_step)
                     self.theta_inh.append(h.Vector())
                     self.theta_inh[-1].record(s.obj._ref_theta, p.record_step_thresh)
-                    self.theta_min_inh.append(h.Vector())
-                    self.theta_min_inh[-1].record(s.obj._ref_theta_min, p.record_step_thresh)
-                    self.kernel_theta_min_inh.append(h.Vector())
-                    self.kernel_theta_min_inh[-1].record(s.obj._ref_kernel_theta_min, p.record_step_thresh)
+                    # self.theta_min_inh.append(h.Vector())
+                    # self.theta_min_inh[-1].record(s.obj._ref_theta_min, p.record_step_thresh)
+                    # self.kernel_theta_min_inh.append(h.Vector())
+                    # self.kernel_theta_min_inh[-1].record(s.obj._ref_kernel_theta_min, p.record_step_thresh)
                     self.caint_syns.append(h.Vector())
                     self.caint_syns[-1].record(s.obj._ref_caint, record_step)
+                    self.caint_max.append(h.Vector())
+                    self.caint_max[-1].record(s.obj._ref_calcium_max, record_step)
                     s.ref_var_theta_inh = self.theta_inh[-1]
-                    s.ref_var_theta_min_inh = self.theta_min_inh[-1]
-                    s.ref_var_kernel_theta_min_inh = self.kernel_theta_min_inh[-1]
+                    # s.ref_var_theta_min_inh = self.theta_min_inh[-1]
+                    # s.ref_var_kernel_theta_min_inh = self.kernel_theta_min_inh[-1]
                     s.ref_var_caint = self.caint_syns[-1]
-                    self.tlast.append(h.Vector())
-                    self.tlast[-1].record(s.obj._ref_tlast, record_step)
-                    self.delta_t.append(h.Vector())
-                    self.delta_t[-1].record(s.obj._ref_delta_t, record_step)
-                    self.asf.append(h.Vector())
-                    self.asf[-1].record(s.obj._ref_active_syn_flag, record_step)
+                    s.ref_var_caint_max = self.caint_max[-1]
+                    # self.tlast.append(h.Vector())
+                    # self.tlast[-1].record(s.obj._ref_tlast, record_step)
+                    # self.delta_t.append(h.Vector())
+                    # self.delta_t[-1].record(s.obj._ref_delta_t, record_step)
+                    # self.asf.append(h.Vector())
+                    # self.asf[-1].record(s.obj._ref_active_syn_flag, record_step)
 
-                    # self.caint = []
-                    # for d in dend_record_list:
-                    #     pos = p.cluster_start_poss[p.independent_dends.index(d)]
-                    #     self.caint.append(h.Vector())
-                    #     self.caint[-1].record(self.cell.dendlist[d](pos)._ref_caint_caint, record_step)
+                if s.type in ['adaptive2_homo_inhexp2syn']:
+                    self.w_inh.append(h.Vector())
+                    self.w_inh[-1].record(s.obj._ref_weight,  p.record_step_thresh)
+                    s.ref_var_w_inh = self.w_inh[-1]
+                    # self.kernel_inh.append(h.Vector())
+                    # self.kernel_inh[-1].record(s.obj._ref_kernel, record_step)
+                    self.theta_inh.append(h.Vector())
+                    self.theta_inh[-1].record(s.obj._ref_theta, p.record_step_thresh)
+                    self.caint_syns.append(h.Vector())
+                    self.caint_syns[-1].record(s.obj._ref_caint, record_step)
+                    self.caint_max.append(h.Vector())
+                    self.caint_max[-1].record(s.obj._ref_calcium_max, record_step)
+                    s.ref_var_theta_inh = self.theta_inh[-1]
+                    s.ref_var_caint = self.caint_syns[-1]
+                    s.ref_var_caint_max = self.caint_max[-1]
+                    # self.asf.append(h.Vector())
+                    # self.asf[-1].record(s.obj._ref_active_syn_flag, record_step)
+                if s.type in ['adaptive2_hetero_inhexp2syn', 'adaptive2_hetero_amp_inhexp2syn',
+                    'adaptive2_cont_hetero_amp_inhexp2syn']:
+                    self.w_inh.append(h.Vector())
+                    self.w_inh[-1].record(s.obj._ref_weight,  p.record_step_thresh)
+                    s.ref_var_w_inh = self.w_inh[-1]
+                    self.theta_inh.append(h.Vector())
+                    self.theta_inh[-1].record(s.obj._ref_theta, p.record_step_thresh)
+                    self.caint_syns.append(h.Vector())
+                    self.caint_syns[-1].record(s.obj._ref_caint, record_step)
+                    self.caint_max.append(h.Vector())
+                    self.caint_max[-1].record(s.obj._ref_calcium_max, record_step)
+                    s.ref_var_theta_inh = self.theta_inh[-1]
+                    s.ref_var_caint = self.caint_syns[-1]
+                    s.ref_var_caint_max = self.caint_max[-1]
+                    # self.asf.append(h.Vector())
+                    # self.asf[-1].record(s.obj._ref_active_syn_flag, record_step)
+
+            if self.exptype in ['inhibitory_plasticity', 'nfbp_inh', 'pattern',
+                                'pattern_homo', 'pattern_hetero', 'pattern_hetero_amp',
+                                'pattern_cont_hetero_amp']:
+                self.caint = []
+                for d in dend_record_list:
+                    pos = p.cluster_start_poss[p.independent_dends.index(d)]
+                    self.caint.append(h.Vector())
+                    self.caint[-1].record(self.cell.dendlist[d](pos)._ref_caint_caint, record_step)
 
         if self.exptype == 'record_i':
             self.ina = []
@@ -883,6 +975,29 @@ class Plasticity_Experiment(e.Experiment):
                 self.v_agh.append(h.Vector())
                 self.v_agh[-1].record(syn.sec(syn.pos)._ref_v, p.record_step_v)
 
+    def plot_ba(self):
+        fig_ba, axes_ba = plt.subplots(3, 1, sharex = True)
+        legends = [];
+        stimuli = 3
+        multiplier = int(p.session_length*p.nrn_dots_per_1ms)
+        for j in range(0, len(self.vdlist)):
+            for i in range(0,stimuli):
+                color = self.set_color(i+1); color = color[0]
+                axes_ba[j].plot(self.tv.to_python()[p.first_training_input_start+i*multiplier : p.first_training_input_start + (i+1)*multiplier],
+                                self.vdlist[j].to_python()[p.first_training_input_start+i*multiplier: p.first_training_input_start + (i+1)*multiplier], color = color, alpha = 0.5);
+                if i == stimuli -1 :
+                    axes_ba[j].plot(self.tv.to_python()[p.first_training_input_start+i*multiplier:  p.first_training_input_start + (i+1)*multiplier],
+                                self.vdlist[j].to_python()[-(stimuli-i)*multiplier:], color = color);
+                else:
+                    axes_ba[j].plot(self.tv.to_python()[p.first_training_input_start+i*multiplier:  p.first_training_input_start + (i+1)*multiplier],
+                                self.vdlist[j].to_python()[-(stimuli-i)*multiplier:-(stimuli-i-1)*multiplier], color = color);
+
+            axes_ba[j].set_ylabel('v$_{\mathrm{{dend%d}}}$ (mV)' % (j+1))
+            axes_ba[j].set_yticks([-80, -50, -20])
+        axes_ba[-1].set_xlabel('t (ms)')
+
+        return fig_ba, axes_ba
+
     def plot_voltage(self):
         if self.exptype == 'fbp' and p.connectivity == 'random':
             fig, axes = plt.subplots(1, 1, figsize = (p.fig_width, p.fig_height))
@@ -940,6 +1055,11 @@ class Plasticity_Experiment(e.Experiment):
             fig, axes = plt.subplots(rows, 1, sharex = True)
             fig_ba, axes_ba = plt.subplots(rows,1, sharex = True, figsize = (p.fig_width, p.fig_height*2))
             legends = [];
+            if self.exptype == 'nfbp_inh':
+                stimuli = 4
+            elif self.exptype in ['pattern', 'pattern_homo', 'pattern_hetero', 'pattern_hetero_amp', 'pattern_cont_hetero_amp']:
+                stimuli = 3
+
             axes[0].plot(self.tv, self.vdlist[0]); plot_num += 1;
             multiplier = int(p.session_length*p.nrn_dots_per_1ms)
             start = int(p.first_training_input_start*p.nrn_dots_per_1ms)
@@ -1024,8 +1144,10 @@ class Plasticity_Experiment(e.Experiment):
         if self.exptype in ['xor', 'xor_hom', 'xor_test_set', 'xor_gen', 'xor_shom_spillover',
                               'xor_spillover', 'xor_sspillover', 'xor_hom_spillover', 'xor_spillover_test',
                               'xor_cshom_spillover', 'xor_zahra_spillover','xor_shom_my_spillover',
-                              'xor_shom_my_spillover_stp', 'nfbp_inh', 'pattern', 'xor_hom_spillover_fNMDA',
-                              'xor_ahom_spillover', 'xor_addhom_spillover', 'fbp']:
+                              'xor_shom_my_spillover_stp', 'nfbp_inh', 'xor_hom_spillover_fNMDA',
+                              'xor_ahom_spillover', 'xor_addhom_spillover', 'fbp',
+                              'pattern', 'pattern_homo',
+                              'pattern_hetero', 'pattern_hetero_amp', 'pattern_cont_hetero_amp']:
 
 
             #------------------------------------------------#
@@ -1047,7 +1169,8 @@ class Plasticity_Experiment(e.Experiment):
                                 'xor_hom_spillover', 'xor_shom_spillover', 'xor_cshom_spillover',
                                 'xor_zahra_spillover', 'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                                 'xor_hom_spillover_fNMDA', 'xor_ahom_spillover', 'nfbp_inh',
-                                'xor_addhom_spillover', 'fbp']:
+                                'xor_addhom_spillover', 'fbp', 'pattern', 'pattern_homo', 'pattern_hetero', 'pattern_hetero_amp',
+                                'pattern_cont_hetero_amp']:
                 if self.exptype == 'xor':
                     self.synlist = self.get_synapse_list('adaptive_glutamate2', clustered_flag = True)
                 elif self.exptype == 'xor_hom':
@@ -1091,6 +1214,16 @@ class Plasticity_Experiment(e.Experiment):
                     self.synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
                     self.synlist_agh = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
                     self.synlist_i = self.get_synapse_list('adaptive2_inhexp2syn', clustered_flag = True, drive_type = 'i')
+                elif self.exptype == 'pattern':
+                    self.synlist = self.get_synapse_list('adaptive2_inhexp2syn', clustered_flag = True, drive_type = 'i')
+                elif self.exptype == 'pattern_homo':
+                    self.synlist = self.get_synapse_list('adaptive2_homo_inhexp2syn', clustered_flag = True, drive_type = 'i')
+                elif self.exptype == 'pattern_hetero':
+                    self.synlist = self.get_synapse_list('adaptive2_hetero_inhexp2syn', clustered_flag = True, drive_type = 'i')
+                elif self.exptype == 'pattern_hetero_amp':
+                    self.synlist = self.get_synapse_list('adaptive2_hetero_amp_inhexp2syn', clustered_flag = True, drive_type = 'i')
+                elif self.exptype == 'pattern_cont_hetero_amp':
+                    self.synlist = self.get_synapse_list('adaptive2_cont_hetero_amp_inhexp2syn', clustered_flag = True, drive_type = 'i')
                 self.synlist.sort(key = lambda f: f.sec.name())
 
                 if self.exptype != 'xor_hom_spillover_fNMDA':
@@ -1098,10 +1231,12 @@ class Plasticity_Experiment(e.Experiment):
                 else:
                     syn_figs_wampa, syn_axes_wampa = self.plot_helper('wampa');
 
-                if self.exptype == 'nfbp_inh':
+                if self.exptype in ['nfbp_inh', 'pattern', 'pattern_homo', 'pattern_hetero', 'pattern_hetero_amp',
+                                    'pattern_cont_hetero_amp']:
                     syn_figs_winh, syn_axes_winh = self.plot_helper('winh');
                     syn_figs_tinh, syn_axes_tinh = self.plot_helper('theta_inh');
-                    syn_figs_tinh, syn_axes_tinh = self.plot_helper('theta_min_inh');
+                    syn_figs_wampa, syn_axes_wampa = self.plot_helper('caint_max');
+                    # syn_figs_tinh, syn_axes_tinh = self.plot_helper('theta_min_inh');
                     # syn_figs_pf, syn_axes_pf = self.plot_pf_inputs(); #sns.despine()
 #                if not self.exptype == 'xor_gen':
 #                    syn_figs_wnmda, syn_axes_wnmda = self.plot_helper('wnmda'); sns.despine()
@@ -1156,51 +1291,94 @@ class Plasticity_Experiment(e.Experiment):
                             ax_m.plot(self.t, m, color =light_colors[j] )
 
                 plt.show()
+
+                # fig_tlast = plt.figure()
+                # ax_tlast = fig_tlast.add_subplot(111)
+                # ax_tlast.set_xlabel('t'); ax_tlast.set_ylabel('tlast');
+                # for i in range(0, len(self.tlast)):
+                #     ax_tlast.plot(self.tout, self.tlast[i])
+                # sns.despine()
+                #
+                # fig_asf = plt.figure()
+                # ax_asf = fig_asf.add_subplot(111)
+                # ax_asf.set_xlabel('t'); ax_asf.set_ylabel('asf');
+                # # synlist = self.get_synapse_list('adaptive2_inhexp2syn', clustered_flag = True, drive_type = 'i')
+                # for i in range(0, len(self.asf)):
+                #     color, linestyle, marker = self.set_color(self.synlist[i].source)
+                #     ax_asf.plot(self.tout, self.asf[i], color = color)
+                # sns.despine()
+                #
+                # fig_dt = plt.figure()
+                # ax_dt = fig_dt.add_subplot(111)
+                # ax_dt.set_xlabel('t'); ax_dt.set_ylabel('delta_t');
+                # for i in range(0, len(self.delta_t)):
+                #     ax_dt.plot(self.tout, self.delta_t[i])
+                # sns.despine()
+                #
+                # fig_wuf = plt.figure()
+                # ax_wuf = fig_wuf.add_subplot(111)
+                # ax_wuf.set_xlabel('t'); ax_wuf.set_ylabel('Weight update flag');
+                # ax_wuf.plot(self.tout, self.weight_update_flag)
+                # sns.despine()
+                #
+                # fig_sf = plt.figure()
+                # ax_sf = fig_sf.add_subplot(111)
+                # ax_sf.set_xlabel('t'); ax_sf.set_ylabel('Stimulus flag');
+                # ax_sf.plot(self.tout, self.stimulus_flag)
+                # sns.despine()
+                #
+                # if self.exptype not in ['pattern', 'pattern_homo', 'pattern_hetero', 'pattern_hetero_amp',
+                #                         'pattern_cont_hetero_amp']:
+                #     fig_d = plt.figure()
+                #     ax_d = fig_d.add_subplot(111)
+                #     ax_d.set_xlabel('t'); ax_d.set_ylabel('dopamine');
+                #     ax_d.plot(self.tout, self.dopamine_vec)
+                #     sns.despine()
+
                 return fig_m
 
-
-#                for i in range(0,len(self.synlist)):
-#                    if i==0 or (self.synlist[i].sec.name() != self.synlist[i-1].sec.name()):
-#                        syn_figs_wampa.append(plt.figure())
-#                        syn_axes_wampa.append(syn_figs_wampa[-1].add_subplot(111))
-#                        syn_figs_ca_nmda.append(plt.figure())
-#                        syn_axes_ca_nmda.append(syn_figs_ca_nmda[-1].add_subplot(111))
-#                        syn_figs_cali.append(plt.figure())
-#                        syn_axes_cali.append(syn_figs_cali[-1].add_subplot(111))
-
-#
-#                        syn_axes_wampa[-1].set_xlabel('t'); syn_axes_wampa[-1].set_ylabel('w_ampa');
-#                        syn_axes_wampa[-1].set_ylim(p.LTD_factor*p.gAMPAmax_plateau, p.LTP_factor*p.gAMPAmax_plateau)
-#                        syn_axes_ca_nmda[-1].set_xlabel('t'); syn_axes_ca_nmda[-1].set_ylabel('cai_nmda');
-#                        syn_axes_cali[-1].set_xlabel('t'); syn_axes_cali[-1].set_ylabel('cali');
-#
-#                        if not (i == 0):
-#                            syn_axes_wampa[-2].legend(legend)
-#                            syn_axes_ca_nmda[-2].legend(legend)
-#                            syn_axes_cali[-2].legend(legend)
-#                            legend = []
-#
-#                    color, linestyle = self.set_color(self.synlist[i].source)
-#                    syn_axes_wampa[-1].plot(self.tout, self.synlist[i].ref_var, color = color, linestyle = linestyle)
-#                    syn_axes_ca_nmda[-1].plot(self.tout, self.cai_nmda_in_syns[i])
-#                    syn_axes_cali[-1].plot(self.tout, self.cali_in_syns[i])
-#
-#                    string = '%s(%.2f) = %.2f um' % (self.synlist[i].sec.name(), self.synlist[i].pos,
-#                            h.distance(self.synlist[i].pos, sec = self.synlist[i].sec) )
-#                    legend.append(string)
-
-        elif self.exptype == 'record_ca':
+        elif self.exptype in ['record_ca', 'inhibitory_plasticity']:
             fig_vs = plt.figure()
             ax_vs = fig_vs.add_subplot(111)
             ax_vs.set_ylabel('Vs')
-            ax_vs.set_xlabel('t')
-            ax_vs.plot(self.tv, self.vs)
+            if p.simtime < 10000:
+                ax_vs.plot(self.tv, self.vs)
+                ax_vs.set_xlabel('t (ms)')
+            else:
+                t = self.tv.to_python()[int(p.skip_first_x_ms*p.nrn_dots_per_1ms):]
+                vs =self.vs.to_python()[int(p.skip_first_x_ms*p.nrn_dots_per_1ms):]
+                ax_vs.plot(np.asarray(t)*1e-3,vs)
+                ax_vs.set_xlabel('t (s)')
+            if self.exptype == 'inhibitory_plasticity' and p.simtime >= 10000:
+                import efel
+                ax_vs2 = ax_vs.twinx()
+                ax_vs2.set_ylabel('$\mathrm{f_{out}}$ (Hz)')
+                trace = {}
+                trace['T'] = self.tv.to_python()
+                trace['V'] = self.vs.to_python()
+                traces = [trace]
+                freqs = []
+                trange = np.arange(1000 + p.skip_first_x_ms, p.simtime+1000, 1000)
+                for t in np.arange(1000 + p.skip_first_x_ms, p.simtime+1000, 1000):
+                    trace['stim_start'] = [t-1000]
+                    trace['stim_end'] = [t]
+                    res = efel.getFeatureValues(traces, ['mean_frequency'])
+                    print(res)
+                    try:
+                        f = res[0]['mean_frequency'][0]
+                    except TypeError as e:
+                        f = 0
+                    freqs.append(f)
+                t = np.divide(np.arange(1000 + p.skip_first_x_ms, p.simtime+1000, 1000), 1000)
+                colors = sns.color_palette("Blues", 20)
+                ax_vs2.plot(t, freqs, color = colors[4], marker = 'o')
 
-            fig_cai_soma = plt.figure()
-            ax_cai_soma = fig_cai_soma.add_subplot(111)
-            ax_cai_soma.set_ylabel('soma cai')
-            ax_cai_soma.set_xlabel('t')
-            ax_cai_soma.plot(self.tout, self.cai_soma)
+            if self.exptype == 'record_ca':
+                fig_cai_soma = plt.figure()
+                ax_cai_soma = fig_cai_soma.add_subplot(111)
+                ax_cai_soma.set_ylabel('soma cai')
+                ax_cai_soma.set_xlabel('t')
+                ax_cai_soma.plot(self.tout, self.cai_soma)
 
             fig_vd = plt.figure();
             ax_vd = fig_vd.add_subplot(111);
@@ -1306,8 +1484,47 @@ class Plasticity_Experiment(e.Experiment):
             if self.cell.spines != []:
                 ax_cali_dend.legend(legend_list)
 
-            plt.show()
-            return fig_vs, fig_vd, fig_cali, fig_cai_nmda
+            # plt.show()
+            # return fig_vs, fig_vd, fig_cali, fig_cai_nmda
+
+            if self.exptype == 'inhibitory_plasticity':
+                synlist = self.get_synapse_list('adaptive_inhexp2syn', clustered_flag = False, drive_type = 'i')
+                max_dist = self.cell.max_dist()
+                cmap = plt.cm.Blues
+                norm = plt.Normalize(vmin=0, vmax=max_dist)
+                sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+                sm.set_array([])
+
+                fig_w_inh = plt.figure()
+                ax_w_inh = fig_w_inh.add_subplot(111)
+                ax_w_inh.set_ylabel('$\mathrm{w_{inh}}$')
+                ax_w_inh.set_xlabel('t')
+                for s in synlist:
+                    color = cmap(norm(h.distance(s.pos, sec = s.sec)))
+                    t = self.tout[int(p.skip_first_x_ms*p.nrn_dots_per_1ms):]
+                    w = s.ref_var_w_inh.to_python()[int(p.skip_first_x_ms*p.nrn_dots_per_1ms):]
+                    ax_w_inh.plot(t, w, color = color)
+                plt.colorbar(sm, label='Distance')
+
+                fig_kernel_inh = plt.figure()
+                ax_kernel_inh = fig_kernel_inh.add_subplot(111)
+                ax_kernel_inh.set_ylabel('kernel_inh')
+                ax_kernel_inh.set_xlabel('t')
+                for k in self.kernel_inh:
+                    ax_kernel_inh.plot(self.tout, k)
+
+            fig_caint = plt.figure();
+            ax_caint = fig_caint.add_subplot(111);
+            ax_caint.set_ylabel('F ($\mathrm{\mu}$M ms)')
+            ax_caint.set_xlabel('t')
+            t = self.tout[int(p.skip_first_x_ms*p.nrn_dots_per_1ms):]
+            for i in range(0,len(self.caint)):
+                c = (self.caint[i]).to_python()[int(p.skip_first_x_ms*p.nrn_dots_per_1ms):]
+                ax_caint.plot(t, np.multiply(c,1000))
+
+            legend_list = []
+            for i in self.dend_record_list:
+                legend_list.append('dend[%d](%.2f) = %.2f um' % (i,p.pos, h.distance(p.pos, sec = self.cell.dendlist[i]) ))
 
         if self.exptype in ['record_i']:
 #            fig_vs = plt.figure()
@@ -1367,7 +1584,7 @@ class Plasticity_Experiment(e.Experiment):
             for i in range(0,len(self.ik)):
                 ax_i.plot(self.tout, self.ik[i]+self.ina[i]+sum(self.ica_nmda[i])+sum(self.iampa)+sum(self.iNMDA))
 
-            plt.show()
+            # plt.show()
             return fig_i, fig_ik, fig_inmda, fig_ica_nmda, fig_ina
 
     def plot_distributed_inputs(self):
@@ -1635,7 +1852,7 @@ class Plasticity_Experiment(e.Experiment):
                 self.synlist = self.get_synapse_list('adaptive_zahra_AMPA', clustered_flag = True)
                 self.synlist_nc = self.get_synapse_list('adaptive_zahra_NMDA', clustered_flag = True)
                 self.synlist_ne = self.get_synapse_list('adaptive_NMDAe', clustered_flag = True)
-            l = self.synlist
+            l = self.synlist_nc
 
         elif self.exptype in ['nfbp_inh']:
             self.synlist_nc = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
@@ -1655,11 +1872,42 @@ class Plasticity_Experiment(e.Experiment):
             elif plot_what in ['winh', 'theta_inh', 'theta_min_inh']:
                 l = self.synlist_i
 
+        elif self.exptype in ['pattern']:
+            self.synlist_nc = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+            self.synlist = self.get_synapse_list('adaptive2_inhexp2syn', clustered_flag = True, drive_type = 'i')
+            l = self.synlist_nc
+            l_inh = self.synlist
+
+        elif self.exptype in ['pattern_homo']:
+            self.synlist_nc = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+            self.synlist = self.get_synapse_list('adaptive2_homo_inhexp2syn', clustered_flag = True, drive_type = 'i')
+            l = self.synlist_nc
+            l_inh = self.synlist
+
+        elif self.exptype in ['pattern_hetero', 'pattern_hetero_amp', 'pattern_cont_hetero_amp']:
+            self.synlist_nc = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+            if self.exptype == 'pattern_hetero':
+                self.synlist = self.get_synapse_list('adaptive2_hetero_inhexp2syn', clustered_flag = True, drive_type = 'i')
+            elif self.synlist == 'pattern_hetero_amp':
+                self.synlist = self.get_synapse_list('adaptive2_hetero_amp_inhexp2syn', clustered_flag = True, drive_type = 'i')
+            elif self.synlist == 'pattern_cont_hetero_amp':
+                self.synlist = self.get_synapse_list('adaptive2_cont_hetero_amp_inhexp2syn', clustered_flag = True, drive_type = 'i')
+            l = self.synlist_nc
+            l_inh = self.synlist
+
+            if plot_what in ['ca_nmda dend', 'wnmda_e']:
+                l = self.synlist_ne
+            elif plot_what in ['ca_nmda', 'cali']:
+                l = self.synlist_nc
+            elif plot_what == 'wnmda' or plot_what in ['thresh_LTP', 'thresh_LTD',
+                                                       'lthresh_LTP', 'hthresh_LTP']:
+                l = self.synlist_nc
+
         elif self.exptype == 'xor_test_set':
             self.synlist = self.get_synapse_list('glutamate_xor_test', clustered_flag = True)
             l = self.synlist
-        # self.synlist.sort(key = lambda f: f.sec.name())
-        # l.sort(key = lambda f: f.sec.name())
+        self.synlist.sort(key = lambda f: f.sec.name())
+        l.sort(key = lambda f: f.sec.name())
 
         xlabel = 't (s)'
         if self.exptype in ['xor_spillover','xor_hom_spillover','xor_shom_spillover',
@@ -1672,7 +1920,7 @@ class Plasticity_Experiment(e.Experiment):
             if plot_what == 'wampa':
                 syn_strength = p.gAMPAmax_plateau
             elif plot_what == 'wnmda':
-                syn_strength = p.gNMDAmax_plateau
+                syn_strength =0.5*(p.start_weight + p.end_weight)
             elif plot_what == 'wnmda_e':
                 syn_strength = p.gNMDAmax_plateau
         if plot_what == 'wampa':
@@ -1683,9 +1931,9 @@ class Plasticity_Experiment(e.Experiment):
             if self.exptype == 'xor_gen':
                 yliml = yval.min()
                 ylimu = yval.max()
-        elif plot_what == 'wnmda' or plot_what == 'pf':
+        elif plot_what == 'wnmda':
             yval = np.asarray([np.asarray(s.ref_var_nmda.to_python())/syn_strength for s in l])*100
-            ylabel = 'w (% of w$_0$)'
+            ylabel = '$w_{exc}$\n(% of initial value)'
             yliml = yval.min()#p.gNMDAmax_plateau*p.scale_conductance
             ylimu = yval.max()#p.gNMDAmax_plateau*p.scale_conductance
         elif plot_what == 'wnmda_e':
@@ -1694,18 +1942,18 @@ class Plasticity_Experiment(e.Experiment):
             yliml = yval.min()#p.gNMDAmax_plateau*p.scale_conductance
             ylimu = yval.max()#p.gNMDAmax_plateau*p.scale_conductance
         elif plot_what == 'winh':
-            yval = np.asarray([np.asarray(s.ref_var_w_inh.to_python())/p.weight_inh for s in l])*100
+            yval = np.asarray([np.asarray(s.ref_var_w_inh.to_python())/p.weight_inh for s in l_inh])*100
             ylabel = ' $w_{inh}$ \n (% of initial value)'
             yliml = yval.min()#p.gNMDAmax_plateau*p.scale_conductance
             ylimu = yval.max()#p.gNMDAmax_plateau*p.scale_conductance
         elif plot_what == 'theta_inh':
-            yval = np.asarray([np.asarray(s.ref_var_theta_inh.to_python()) for s in l])
+            yval = np.asarray([np.asarray(s.ref_var_theta_inh.to_python()) for s in l_inh])
             ylabel = ' $\\theta_{inh}$'
             yliml = yval.min()#p.gNMDAmax_plateau*p.scale_conductance
             ylimu = yval.max()#p.gNMDAmax_plateau*p.scale_conductance
-        elif plot_what == 'theta_min_inh':
-            yval = np.asarray([np.asarray(s.ref_var_theta_min_inh.to_python()) for s in l])
-            ylabel = ' $\\theta_{inh}$'
+        elif plot_what == 'caint_max':
+            yval = np.asarray([np.asarray(s.ref_var_theta_inh.to_python()) for s in l_inh])
+            ylabel = 'max(F)'
             yliml = yval.min()#p.gNMDAmax_plateau*p.scale_conductance
             ylimu = yval.max()#p.gNMDAmax_plateau*p.scale_conductance
         elif plot_what == 'ca_nmda':
@@ -1832,6 +2080,11 @@ class Plasticity_Experiment(e.Experiment):
             r = [si for s in l for si in re.findall("\[\d+\]", s.sec.name()) ]
             r = [ int(num) for elem in r for num in re.findall("\d+", elem)]
 
+            if plot_what in ['winh', 'theta_inh', 'kernel_theta_min_inh', 'caint_max']:
+                end_range = len(l_inh)
+            else:
+                end_range = len(l)
+
             for i in range(0,len(l)):
                 if i==0 or (r[i] != r[i-1]):
                     figs.append(plt.figure(figsize = (p.fig_width, p.fig_height)))
@@ -1843,8 +2096,19 @@ class Plasticity_Experiment(e.Experiment):
                         axess[-1].set_ylim(p.ymin_w, p.ymax_w)
 
                 if plot_what in ['wampa','wnmda','thresh_LTP', 'lthresh_LTP', 'hthresh_LTP',
-                                 'thresh_LTD', 'winh', 'theta_inh', 'theta_min_inh']:
-                    color, linestyle, marker = self.set_color(l[i].source)
+                                 'thresh_LTD', 'winh', 'theta_inh', 'theta_min_inh',
+                                 'kernel_theta_min_inh', 'caint_max']:
+                    if plot_what in ['winh', 'theta_inh', 'kernel_theta_min_inh', 'caint_max']:
+                        color, linestyle, marker = self.set_color(l_inh[i].source)
+                        print(r[i], l_inh[i].source, color, l_inh[i].obj.weight)
+                        if l_inh[i].source == 1:
+                            linewidth = p.linewidth_A
+                        elif l_inh[i].source == 2:
+                            linewidth = p.linewidth_B
+                        elif l_inh[i].source == 3:
+                            linewidth = p.linewidth_C
+                    else:
+                        color, linestyle, marker = self.set_color(l[i].source)
                     if plot_what in ['wampa', 'wnmda', 'winh', 'theta_inh', 'theta_min_inh']:
                         axess[-1].plot(np.multiply(self.tthresh.to_python(),0.001), yval[i], color = color, linestyle = linestyle)
                     elif (i%10 == 0):
@@ -1909,6 +2173,25 @@ class Plasticity_Experiment(e.Experiment):
                 # axess[-1].set_xticks([0,100,200,300])
                 # axess[-2].set_xticks([0,100,200,300])
         return figs, axess
+
+    def get_first_syn_in_cluster(self, drive_type):
+        synlist = [0]
+        if drive_type == 'e':
+            syns = self.dendstatobj.dend_syns
+        elif drive_type == 'i':
+            syns = self.dendstatobj.dend_inh_syns
+        else:
+            print("From method  get_first_syn_in_cluster:")
+            print("drive_type %s not supported" % drive_type)
+            sys.exit(-1)
+
+        for sl in syns:
+            synlist.extend(sl)
+
+        for i,el in enumerate(synlist[1:]):
+            synlist[i+1] = synlist[i] + synlist[i+1]
+
+        return synlist
 
     def write_results(self):
 
@@ -2101,7 +2384,7 @@ class Plasticity_Experiment(e.Experiment):
                             'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                             'xor_hom_spillover_fNMDA', 'xor_ahom_spillover',
                             'xor_addhom_spillover', 'nfbp_inh', 'fbp']:
-            self.insert_synapses('MSN')
+            self.insert_synapses('noise_SPN')
             self.create_dopamine()
             ts = self.create_training_set(p.training_set_size)
             print("Training set"); print(ts)
@@ -2114,6 +2397,21 @@ class Plasticity_Experiment(e.Experiment):
             if p.with_diffusion:
                 self.cell.set_up_diffusion()
                 self.set_up_diffusion()
+
+        elif self.exptype in ['pattern', 'pattern_homo', 'pattern_hetero', 'pattern_hetero_amp','pattern_cont_hetero_amp']:
+            self.insert_synapses('noise_SPN')
+            self.create_dopamine()
+            ts = self.create_training_set(p.training_set_size)
+            print("Training set"); print(ts)
+            self.training_set = ts; self.training_set_copy = self.training_set
+            self.rewards_delivered = []
+            self.pattern_input_times, self.reward_times = self.convert_ts_to_times(ts)
+            self.create_pattern_inputs(p.pattern_input_size)
+            self.connect_pattern_inputs()
+            self.spike_recorder(self.cell.somalist[0], 0.5, -10)
+            for dend in self.dendstatobj.dends:
+                start_pos = p.cluster_start_poss[p.independent_dends.index(dend)]
+                self.spike_recorder(self.cell.dendlist[dend], start_pos, -50)
 
     def simulate(self, simtime = p.simtime, parallel = False):
         start = time.time()
@@ -2134,7 +2432,9 @@ class Plasticity_Experiment(e.Experiment):
                                 'xor_cshom_spillover', 'xor_sspillover', 'xor_zahra_spillover',
                                 'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                                 'xor_hom_spillover_fNMDA', 'xor_ahom_spillover',
-                                'xor_addhom_spillover', 'nfbp_inh', 'fbp']:
+                                'xor_addhom_spillover', 'nfbp_inh', 'fbp',
+                                'pattern', 'pattern_homo', 'pattern_hetero', 'pattern_hetero_amp',
+                                'pattern_cont_hetero_amp']:
                 fih1 = h.FInitializeHandler((self.seti_dopamine_release, self.reward_times))
 
 #                fih2 = h.FInitializeHandler((self.seti_xor_input_times, self.xor_input_times))
@@ -2145,6 +2445,8 @@ class Plasticity_Experiment(e.Experiment):
                                     'xor_shom_my_spillover_stp', 'xor_hom_spillover_fNMDA',
                                     'xor_ahom_spillover', 'xor_addhom_spillover', 'nfbp_inh', 'fbp']:
                     fih2 = h.FInitializeHandler((self.seti_stimulus_indicators, self.xor_input_times))
+                    if self.exptype == 'nfbp_inh':
+                        fih_wu = h.FInitializeHandler((self.seti_weight_update_indicators, self.xor_input_times))
                 if self.exptype in ['xor_hom_spillover',
                                     'xor_hom_spillover_fNMDA',
                                     'xor_shom_my_spillover',
@@ -2153,9 +2455,26 @@ class Plasticity_Experiment(e.Experiment):
                                     'xor_addhom_spillover',
                                     'nfbp_inh', 'fbp']:
                     fih5 = h.FInitializeHandler((self.set_exglu_weights))
-                print("Reward times"); print(self.reward_times)
-                print("Xor input times"); print(self.xor_input_times)
+                    print("Reward times"); print(self.reward_times)
+                    print("Xor input times"); print(self.xor_input_times)
+                if self.exptype in ['pattern', 'pattern_homo', 'pattern_hetero', 'pattern_hetero_amp',
+                                    'pattern_cont_hetero_amp']:
+                    fih2 = h.FInitializeHandler((self.seti_stimulus_indicators, self.pattern_input_times))
+                    fih_wu = h.FInitializeHandler((self.seti_weight_update_indicators, self.pattern_input_times))
+                    print("Reward times"); print(self.reward_times)
+                    print("Xor input times"); print(self.pattern_input_times)
 
+            if self.exptype in ['inhibitory_plasticity']:
+                fih6 = h.FInitializeHandler((self.set_inh_plasticity, (0, False)))
+                fih7 = h.FInitializeHandler((self.set_inh_plasticity, (p.start_inh_plasticity, True)))
+                if p.inh_exptype == 'rates':
+                    fih8 = h.FInitializeHandler((self.seti_input_rates, p.start_inh_plasticity+p.start_inh_plasticity_offset))
+                elif p.inh_exptype == 'weights':
+                    fih9 = h.FInitializeHandler((self.seti_weights, (p.start_inh_plasticity+p.start_inh_plasticity_offset, p.new_weight)))
+                else:
+                    print("From method simulate %s" % type(self))
+                    print("Inh_exptype '%s' not supported" % p.inh_exptype)
+                    sys.exit(-1)
             h.run()
 
         end = time.time()

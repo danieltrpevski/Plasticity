@@ -66,6 +66,7 @@ class Neuron(object):
 
         if on_spine:
             empty_spines = [spine for spine in self.spines if (spine.parent == sec and spine.syn_on == 0)]
+
             if empty_spines == []:
                 print("There are no empty spines on dendrite %s" % sec.name())
                 sys.exit(-1)
@@ -87,12 +88,18 @@ class Neuron(object):
             self.esyn.append(syn)
             return syn
 
-        elif syntype == 'inhexpsyn' or syntype == 'inhexpsyn_plateau':
+        elif syntype == 'inhexpsyn':
             syn.obj = h.InhExpSyn(sec(pos))
             if syntype == 'inhexpsyn':
                 syn.obj.tau = p.isyn_tau
-            elif syntype == 'inhexpsyn_plateau':
-                syn.obj.tau = p.isyn_plateau_tau
+            syn.obj.e = p.e_gaba
+            self.isyn.append(syn)
+            return self.isyn[-1]
+
+        elif syntype == 'inhexpsyn_plateau':
+            syn.obj = h.InhExp2Syn(sec(pos))
+            syn.obj.tau1 = p.tau1_inhexp2syn
+            syn.obj.tau2 = p.tau1_inhexp2syn
             syn.obj.e = p.e_gaba
             self.isyn.append(syn)
             return self.isyn[-1]
@@ -110,6 +117,191 @@ class Neuron(object):
             syn.obj.e = p.e_gaba
             syn.obj.tau2 = p.tau2_inhexp2syn
             syn.obj.tau1 = p.tau1_inhexp2syn
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'inhexp2syn_caint':
+            syn.obj = h.InhExp2Syn_caint(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+            syn.obj.tau = p.tau_caint
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'adaptive_inhexp2syn':
+            syn.obj = h.adaptive_inhexp2syn(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+
+            syn.obj.w0 = p.weight_inh
+            syn.obj.gmax = p.gGABAmax
+            syn.obj.theta_min = p.theta_min_inh
+            syn.obj.theta = p.theta_inh
+            syn.obj.learning_rate = p.learning_rate_inh
+            syn.obj.n = p.steepness_inh
+            sec.tau_caint = p.tau_caint
+            syn.obj.sf = p.theta_inh_sf
+            syn.obj.caint0 = p.caint0
+
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'adaptive2_inhexp2syn':
+            syn.obj = h.adaptive2_inhexp2syn(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+
+            syn.obj.w0 = p.weight_inh
+            syn.obj.gmax = p.gGABAmax
+            syn.obj.theta_min = p.theta_min_inh
+            syn.obj.theta = p.theta_inh
+            syn.obj.learning_rate = p.learning_rate_inh
+            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
+            syn.obj.n = p.steepness_inh
+            syn.obj.tau = p.tau_caint
+            syn.obj.sf = p.theta_inh_sf
+
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'adaptive2_homo_inhexp2syn':
+            syn.obj = h.adaptive2_homo_inhexp2syn(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+
+            syn.obj.w0 = p.weight_inh
+            syn.obj.gmax = p.gGABAmax
+            syn.obj.theta = p.theta_inh
+            syn.obj.theta_min = p.theta_min_inh
+            syn.obj.learning_rate = p.learning_rate_inh
+            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
+            syn.obj.n = p.steepness_inh
+            syn.obj.tau = p.tau_caint
+            syn.obj.sf = p.theta_inh_sf
+
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'adaptive2_homo_sz_inhexp2syn':
+            syn.obj = h.adaptive2_homo_sz_inhexp2syn(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+
+            syn.obj.w0 = p.weight_inh
+            syn.obj.gmax = p.gGABAmax
+            syn.obj.theta = p.theta_inh
+            syn.obj.theta_min = p.theta_min_inh
+            syn.obj.learning_rate = p.learning_rate_inh
+            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
+            syn.obj.n = p.steepness_inh
+            syn.obj.tau = p.tau_caint
+            syn.obj.sf = p.theta_inh_sf
+            syn.obj.silent_zone = p.silent_zone
+
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'adaptive2_homo_bcm_inhexp2syn':
+            syn.obj = h.adaptive2_homo_bcm_inhexp2syn(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+
+            syn.obj.w0 = p.weight_inh
+            syn.obj.gmax = p.gGABAmax
+            syn.obj.theta = p.theta_inh
+            syn.obj.theta_min = p.theta_min_inh
+            syn.obj.learning_rate = p.learning_rate_inh
+            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
+            syn.obj.n = p.steepness_inh
+            syn.obj.tau = p.tau_caint
+            syn.obj.sf = p.theta_inh_sf
+
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'adaptive2_hetero_bcm_inhexp2syn':
+            syn.obj = h.adaptive2_hetero_bcm_inhexp2syn(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+
+            syn.obj.w0 = p.weight_inh
+            syn.obj.gmax = p.gGABAmax
+            syn.obj.theta = p.theta_inh
+            syn.obj.theta_min = p.theta_min_inh
+            syn.obj.learning_rate = p.learning_rate_inh
+            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
+            syn.obj.n = p.steepness_inh
+            syn.obj.tau = p.tau_caint
+            syn.obj.sf = p.theta_inh_sf
+
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'adaptive2_hetero_inhexp2syn':
+            syn.obj = h.adaptive2_hetero_inhexp2syn(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+
+            syn.obj.w0 = p.weight_inh
+            syn.obj.gmax = p.gGABAmax
+            syn.obj.theta = p.theta_inh
+            syn.obj.theta_min = p.theta_min_inh
+            syn.obj.learning_rate = p.learning_rate_inh
+            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
+            syn.obj.n = p.steepness_inh
+            syn.obj.tau = p.tau_caint
+            syn.obj.sf = p.theta_inh_sf
+
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'adaptive2_hetero_amp_inhexp2syn':
+            syn.obj = h.adaptive2_hetero_amp_inhexp2syn(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+
+            syn.obj.w0 = p.weight_inh
+            syn.obj.gmax = p.gGABAmax
+            syn.obj.theta = p.theta_inh
+            syn.obj.theta_min = p.theta_min_inh
+            syn.obj.learning_rate = p.learning_rate_inh
+            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
+            syn.obj.n = p.steepness_inh
+            syn.obj.n1 = p.steepness_inh_s1
+            syn.obj.tau = p.tau_caint
+            syn.obj.sf = p.theta_inh_sf
+            syn.obj.calcium_amp = p.calcium_amp
+
+            self.isyn.append(syn)
+            return syn
+
+        elif syntype == 'adaptive2_cont_hetero_amp_inhexp2syn':
+            syn.obj = h.adaptive2_cont_hetero_amp_inhexp2syn(sec(pos))
+            syn.obj.e = p.e_gaba
+            syn.obj.tau2 = p.tau2_inhexp2syn
+            syn.obj.tau1 = p.tau1_inhexp2syn
+
+            syn.obj.w0 = p.weight_inh
+            syn.obj.gmax = p.gGABAmax
+            syn.obj.theta = p.theta_inh
+            syn.obj.theta_min = p.theta_min_inh
+            syn.obj.learning_rate = p.learning_rate_inh
+            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
+            syn.obj.n = p.steepness_inh
+            syn.obj.tau = p.tau_caint
+            syn.obj.sf = p.theta_inh_sf
+            syn.obj.calcium_amp = p.calcium_amp
+            syn.obj.calcium_max = p.theta_inh/p.theta_inh_sf
+
             self.isyn.append(syn)
             return syn
 
@@ -230,13 +422,6 @@ class Neuron(object):
             self.esyn.append(syn)
             return syn
 
-        elif syntype == 'adaptive_pf_AMPA':
-            syn.obj = h.adaptive_pf_AMPA(sec(pos))
-            syn.obj.gmax = p.gmaxAMPA_pf
-
-            self.esyn.append(syn)
-            return syn
-
         elif syntype in ['adaptive_shom_NMDA','adaptive_shom_NMDA_stp','adaptive_my_shom_NMDA']:
             if syntype in ['adaptive_shom_NMDA']:
                 syn.obj = h.adaptive_shom_NMDA(sec(pos))
@@ -274,33 +459,41 @@ class Neuron(object):
                 syn.obj.n_LTD = p.n_LTD
                 syn.obj.learning_rate_thresh_KD_LTD = p.learning_rate_thresh_KD_LTD
 
-
             self.esyn.append(syn)
             return syn
 
-        elif syntype == 'adaptive_pf_NMDA':
-            syn.obj = h.adaptive_pf_NMDA(sec(pos))
+        elif syntype == 'adaptive_AMPA':
+           syn.obj = h.adaptive_AMPA(sec(pos))
+           syn.obj.gmax = p.gmaxAMPA_spillover
 
-            syn.obj.mg = p.Mg
-            syn.obj.eta = p.eta
-            syn.obj.alpha = p.alpha
-            syn.obj.gmax = p.gmaxNMDA_pf
-            syn.obj.Beta = p.nmda_beta
-            syn.obj.Cdur = p.Cdur_pf
-            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
-            syn.obj.Erev = p.erev_NMDA
-            syn.obj.Cmax = p.nmda_Tmax
+           syn.obj.Alpha = p.ampa_alpha
+           syn.obj.Beta = p.ampa_beta
 
-            syn.obj.w0 = p.weight
-            syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
-            syn.obj.learning_rate_w_LTD = p.learning_rate_w_LTD
-            syn.obj.learning_rate_thresh_LTP = p.learning_rate_thresh_LTP
-            syn.obj.learning_rate_thresh_LTD = p.learning_rate_thresh_LTD
-            syn.obj.KD_LTD = p.KD_LTD
-            syn.obj.n_LTD = p.n_LTD
+           self.esyn.append(syn)
+           return syn
 
-            self.esyn.append(syn)
-            return syn
+        elif syntype == 'adaptive_NMDA':
+           syn.obj = h.adaptive_NMDA(sec(pos))
+           syn.obj.mg = p.Mg
+           syn.obj.eta = p.eta
+           syn.obj.alpha = p.alpha
+           syn.obj.Erev = p.erev_NMDA
+           syn.obj.gmax = p.gmaxNMDA_spillover
+           syn.obj.Alpha = p.nmda_alpha
+           syn.obj.Beta = p.nmda_beta
+           syn.obj.Cdur = p.Cdur
+           syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
+
+           syn.obj.w0 = p.weight
+           syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
+           syn.obj.learning_rate_w_LTD = p.learning_rate_w_LTD
+           syn.obj.thresh_LTD = p.thresh_LTD
+           syn.obj.thresh_LTP = p.thresh_LTP
+
+           syn.obj.wmax = p.weight*p.LTP_factor
+           syn.obj.wmin = p.weight*p.LTD_factor
+           self.esyn.append(syn)
+           return syn
 
         elif syntype == 'adaptive_NMDAe':
             syn.obj = h.adaptive_NMDAe(sec(pos))
@@ -522,355 +715,10 @@ class Neuron(object):
            self.esyn.append(syn)
            return syn
 
-        elif syntype == 'adaptive2_inhexp2syn':
-            syn.obj = h.adaptive2_inhexp2syn(sec(pos))
-            syn.obj.e = p.e_gaba
-            syn.obj.tau2 = p.tau2_inhexp2syn
-            syn.obj.tau1 = p.tau1_inhexp2syn
-
-            syn.obj.w0 = p.weight_inh
-            syn.obj.gmax = p.gGABAmax
-            syn.obj.theta_min = p.theta_min_inh
-            syn.obj.theta = p.theta_inh
-            syn.obj.learning_rate = p.learning_rate_inh
-            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
-            syn.obj.n = p.steepness_inh
-            syn.obj.tau = p.tau_caint
-            syn.obj.sf = p.theta_inh_sf
-
-            self.isyn.append(syn)
-            return syn
-
-        elif syntype == 'adaptive2_homo_inhexp2syn':
-            syn.obj = h.adaptive2_homo_inhexp2syn(sec(pos))
-            syn.obj.e = p.e_gaba
-            syn.obj.tau2 = p.tau2_inhexp2syn
-            syn.obj.tau1 = p.tau1_inhexp2syn
-
-            syn.obj.w0 = p.weight_inh
-            syn.obj.gmax = p.gGABAmax
-            syn.obj.theta = p.theta_inh
-            syn.obj.theta_min = p.theta_min_inh
-            syn.obj.learning_rate = p.learning_rate_inh
-            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
-            syn.obj.n = p.steepness_inh
-            syn.obj.tau = p.tau_caint
-            syn.obj.sf = p.theta_inh_sf
-
-            self.isyn.append(syn)
-            return syn
-
-        elif syntype == 'adaptive2_homo_bcm_inhexp2syn':
-            syn.obj = h.adaptive2_homo_bcm_inhexp2syn(sec(pos))
-            syn.obj.e = p.e_gaba
-            syn.obj.tau2 = p.tau2_inhexp2syn
-            syn.obj.tau1 = p.tau1_inhexp2syn
-
-            syn.obj.w0 = p.weight_inh
-            syn.obj.gmax = p.gGABAmax
-            syn.obj.theta = p.theta_inh
-            syn.obj.theta_min = p.theta_min_inh
-            syn.obj.learning_rate = p.learning_rate_inh
-            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
-            syn.obj.n = p.steepness_inh
-            syn.obj.tau = p.tau_caint
-            syn.obj.sf = p.theta_inh_sf
-
-            self.isyn.append(syn)
-            return syn
-
-        elif syntype == 'adaptive2_hetero_amp_inhexp2syn':
-            syn.obj = h.adaptive2_hetero_amp_inhexp2syn(sec(pos))
-            syn.obj.e = p.e_gaba
-            syn.obj.tau2 = p.tau2_inhexp2syn
-            syn.obj.tau1 = p.tau1_inhexp2syn
-
-            syn.obj.w0 = p.weight_inh
-            syn.obj.gmax = p.gGABAmax
-            syn.obj.theta = p.theta_inh
-            syn.obj.theta_min = p.theta_min_inh
-            syn.obj.learning_rate = p.learning_rate_inh
-            syn.obj.learning_rate_theta = p.learning_rate_theta_inh
-            syn.obj.n = p.steepness_inh
-            syn.obj.n1 = p.steepness_inh_s1
-            syn.obj.tau = p.tau_caint
-            syn.obj.sf = p.theta_inh_sf
-            syn.obj.calcium_amp = p.calcium_amp
-
-            self.isyn.append(syn)
-            return syn
-
         else:
             print("From method cell.insert_synapse")
             print("Syntype '%s' not supported" % syntype)
             sys.exit(-1)
-
-
-#        elif syntype == 'adaptive_glutamate':
-#            syn.obj = h.adaptive_glutamate(sec(pos))
-#            syn.obj.mg = p.Mg
-#            syn.obj.eta = p.eta
-#            syn.obj.alpha = p.alpha
-#            syn.obj.w0 = p.gAMPAmax_plateau
-#            syn.obj.wmax = p.gAMPAmax_plateau*p.LTP_factor
-#            syn.obj.wmin = p.gAMPAmax_plateau*p.LTD_factor
-#            syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
-#            syn.obj.learning_rate_w_LTD = p.learning_rate_w_LTD
-#            syn.obj.thresh_LTD = p.thresh_LTD
-#            syn.obj.thresh_LTP = p.thresh_LTP
-#            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
-#            syn.obj.NMDA_AMPA_ratio == p.ratio_distributed_synapses
-#
-#            syn.obj.tau1_nmda = p.tau1_NMDA
-#            syn.obj.tau2_nmda = p.tau2_NMDA
-#
-#            #            if add_spine:
-##                sec = self.spines[-1].parent
-##                pos = self.spines[-1].pos
-##            h.setpointer(sec(pos)._ref_cali, 'cali', syn.obj)
-#
-#            self.esyn.append(syn)
-#            return syn
-
-#        elif syntype == 'adaptive_sglutamate':
-#            syn.obj = h.adaptive_sglutamate(sec(pos))
-#            syn.obj.mg = p.Mg
-#            syn.obj.eta = p.eta
-#            syn.obj.alpha = p.alpha
-#            syn.obj.w0 = p.gAMPAmax_plateau
-#            syn.obj.NMDA_AMPA_ratio = p.ratio_distributed_synapses
-#            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
-#
-#            syn.obj.tau1_nmda = p.tau1_NMDA
-#            syn.obj.tau2_nmda = p.tau2_NMDA
-#
-#            with open(filename, 'r') as f:
-#                to_read = json.load(f)
-#            res_dict = json.loads(to_read)
-#            params_LTP = res_dict['cai_nmda_params_by_dend']
-#            params_LTD = res_dict['cali_params_by_dend']
-#            r = re.findall("\[\d+\]", sec.name())
-#            r = [int(num) for elem in r for num in re.findall("\d+", elem)]
-#            KD1, n1, KD2, n2, factor_LTP = params_LTP[0]
-#            KD_LTD, n_LTD, factor_LTD = params_LTD[0]
-#
-#            syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP*0.25
-#            syn.obj.learning_rate_w_LTD = p.learning_rate_w_LTD*100
-#            syn.obj.n1 = p.n1
-#            syn.obj.KD2 = p.KD2
-#            syn.obj.n2 = p.n2
-#            syn.obj.KD_LTD = p.KD_LTD
-#            syn.obj.n_LTD = p.n_LTD
-#
-#            self.esyn.append(syn)
-#            return syn
-
-#        elif syntype in ['adaptive_glutamate_hom']:
-#            if p.random_weights == True:
-#                w_ampa = rnd.uniform(p.gAMPAmax_plateau*p.LTD_factor, p.gAMPAmax_plateau*p.LTP_factor)
-#            else:
-#                w_ampa = p.gAMPAmax_plateau
-#            syn.obj = h.adaptive_glutamate_hom(sec(pos))
-#
-#            syn.obj.mg = p.Mg
-#            syn.obj.eta = p.eta
-#            syn.obj.alpha = p.alpha
-#            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
-#            syn.obj.w0 = w_ampa
-#            syn.obj.wmax = p.gAMPAmax_plateau*p.LTP_factor_di
-#            syn.obj.wmin = p.gAMPAmax_plateau*p.LTD_factor_di
-#            syn.obj.NMDA_AMPA_ratio = p.ratio_distributed_synapses
-#            syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
-#            syn.obj.learning_rate_w_LTD = p.learning_rate_w_LTD
-#            syn.obj.thresh_LTP_0 = p.thresh_LTP
-#            syn.obj.thresh_LTD_0 = p.thresh_LTD
-#            syn.obj.thresh_LTP_min = p.thresh_LTP_min
-#            syn.obj.thresh_LTD_min = p.thresh_LTD_min
-#
-#            syn.obj.thresh_LTP_max = p.thresh_LTP_max
-#            syn.obj.learning_rate_thresh_LTP = p.learning_rate_thresh_LTP_di
-#            syn.obj.thresh_LTD_max = p.thresh_LTD_max
-#            syn.obj.learning_rate_thresh_LTD = p.learning_rate_thresh_LTD_di
-#
-#            syn.obj.tau1_nmda = p.tau1_NMDA
-#            syn.obj.tau2_nmda = p.tau2_NMDA
-#
-#            self.esyn.append(syn)
-#            return syn
-#
-#        elif syntype in ['adaptive_glutamate_shom']:
-#            if p.random_weights == True:
-#                weight = rnd.uniform(p.gAMPAmax_plateau*p.LTD_factor, p.gAMPAmax_plateau*p.LTP_factor)
-#            else:
-#                weight = p.gAMPAmax_plateau
-#            syn.obj = h.adaptive_glutamate_shom(sec(pos))
-#            syn.obj.mg = p.Mg
-#            syn.obj.eta = p.eta
-#            syn.obj.alpha = p.alpha
-#            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
-#            syn.obj.w0 = weight
-#            syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
-#            syn.obj.learning_rate_w_LTD = p.learning_rate_w_LTD
-#            syn.obj.thresh_LTP_0 = p.thresh_LTP
-#            syn.obj.thresh_LTD_0 = p.thresh_LTD
-#            syn.obj.hthresh_LTP_0 = p.hthresh_LTP
-#            syn.obj.learning_rate_thresh_LTP = p.learning_rate_thresh_LTP
-#            syn.obj.learning_rate_thresh_LTD = p.learning_rate_thresh_LTD
-#            syn.obj.NMDA_AMPA_ratio = p.ratio_distributed_synapses
-#            syn.obj.tau1_nmda = p.tau1_NMDA
-#            syn.obj.tau2_nmda = p.tau2_NMDA
-##            if add_spine:
-##                sec = self.spines[-1].parent
-##                pos = self.spines[-1].pos
-##            h.setpointer(sec(pos)._ref_cali, 'cali', syn.obj)
-#
-#            self.esyn.append(syn)
-#            return syn
-#
-#        elif syntype in ['adaptive_glutamate_cshom']:
-#            if p.random_weights == True:
-#                weight = rnd.uniform(p.gAMPAmax_plateau*p.LTD_factor, p.gAMPAmax_plateau*p.LTP_factor)
-#            else:
-#                weight = p.gAMPAmax_plateau
-#            syn.obj = h.adaptive_glutamate_cshom(sec(pos))
-#            syn.obj.mg = p.Mg
-#            syn.obj.eta = p.eta
-#            syn.obj.alpha = p.alpha
-#            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
-#            syn.obj.w0 = weight
-#            syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
-#            syn.obj.learning_rate_w_LTD = p.learning_rate_w_LTD
-#            syn.obj.thresh_LTP_0 = p.thresh_LTP
-#            syn.obj.thresh_LTD_0 = p.thresh_LTD
-#            syn.obj.hthresh_LTP_0 = p.hthresh_LTP
-#            syn.obj.lthresh_LTP_min = p.lthresh_LTP_min
-#            syn.obj.learning_rate_thresh_LTP = p.learning_rate_thresh_LTP*2.5
-#            syn.obj.learning_rate_thresh_LTD = p.learning_rate_thresh_LTD*2.5
-#            syn.obj.NMDA_AMPA_ratio = p.ratio_distributed_synapses
-#            syn.obj.tau1_nmda = p.tau1_NMDA
-#            syn.obj.tau2_nmda = p.tau2_NMDA
-#            syn.obj.steepness_LTP = p.steepness_LTP
-#            syn.obj.steepness_LTD = p.steepness_LTD
-            #            if add_spine:
-#                sec = self.spines[-1].parent
-#                pos = self.spines[-1].pos
-#            h.setpointer(sec(pos)._ref_cali, 'cali', syn.obj)
-
-#            self.esyn.append(syn)
-#            return syn
-
-#        elif syntype == 'adaptive_AMPA':
-#            syn.obj = h.adaptive_AMPA(sec(pos))
-#            syn.obj.gmax = p.gmaxAMPA_spillover
-#
-#            syn.obj.w0 = p.weight
-#            syn.obj.wmax = p.weight*p.LTP_factor
-#            syn.obj.wmin = p.weight*p.LTD_factor
-#            syn.obj.learning_rate_w_LTP = p.learning_rate_w
-#            syn.obj.learning_rate_w_LTD = p.learning_rate_w
-#            syn.obj.thresh_LTD = p.thresh_LTD
-#            syn.obj.thresh_LTP = p.thresh_LTP
-#
-#            self.esyn.append(syn)
-#            return syn
-
-#        elif syntype == 'adaptive_sAMPA':
-#            syn.obj = h.adaptive_sAMPA(sec(pos))
-#            syn.obj.gmax = p.gmaxAMPA_spillover
-#
-#            self.esyn.append(syn)
-#            return syn
-#
-#        elif syntype == 'adaptive_NMDA':
-#            syn.obj = h.adaptive_NMDA(sec(pos))
-#            syn.obj.mg = p.Mg
-#            syn.obj.eta = p.eta
-#            syn.obj.alpha = p.alpha
-#            syn.obj.Erev = p.erev_NMDA
-#            syn.obj.gmax = p.gmaxNMDA_spillover
-#            syn.obj.Beta = p.Beta
-#            syn.obj.Cdur = p.eCdur
-#            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
-#
-#            syn.obj.w0 = p.weight
-#            syn.obj.learning_rate_w_LTP = p.learning_rate_w
-#            syn.obj.learning_rate_w_LTD = p.learning_rate_w
-#            syn.obj.thresh_LTD = p.thresh_LTD
-#            syn.obj.thresh_LTP = p.thresh_LTP
-#
-#            syn.obj.Cdur_init = p.eCdur_init
-#            syn.obj.Cdur_factor = p.eCdur_factor
-#
-#            self.esyn.append(syn)
-#            return syn
-
-#        elif syntype == 'adaptive_sNMDA':
-#            syn.obj = h.adaptive_sNMDA(sec(pos))
-#            syn.obj.mg = p.Mg
-#            syn.obj.eta = p.eta
-#            syn.obj.alpha = p.alpha
-#            syn.obj.Erev = p.erev_NMDA
-#            syn.obj.gmax = p.gmaxNMDA_spillover
-#            syn.obj.Beta = p.Beta
-#            syn.obj.Cdur = p.Cdur
-#            syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
-#
-#            syn.obj.w0 = p.weight
-
-#            with open(filename, 'r') as f:
-#                to_read = json.load(f)
-#            res_dict = json.loads(to_read)
-#            params_LTP = res_dict['cai_nmda_params_by_dend']
-#            params_LTD = res_dict['cali_params_by_dend']
-#            r = re.findall("\[\d+\]", sec.name())
-#            r = [int(num) for elem in r for num in re.findall("\d+", elem)]
-#            print(r[0])
-#            KD1, n1, KD2, n2, factor_LTP = params_LTP[p.independent_dends.index(r[0])]
-#            KD_LTD, n_LTD, factor_LTD = params_LTD[p.independent_dends.index(r[0])]
-
-#            syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
-#            syn.obj.learning_rate_w_LTD = p.learning_rate_w_LTD
-#            syn.obj.KD1 = p.KD1
-#            syn.obj.n1 = p.n1
-#            syn.obj.KD2 = p.KD2
-#            syn.obj.n2 = p.n2
-#            syn.obj.KD_LTD = p.KD_LTD
-#            syn.obj.n_LTD = p.n_LTD
-#
-#            self.esyn.append(syn)
-#            return syn
-
-    #    elif syntype == 'adaptive_hom_AMPA':
-    #        syn.obj = h.adaptive_hom_AMPA(sec(pos))
-    #        syn.obj.gmax = p.gmaxAMPA_spillover
-       #
-    #        syn.obj.w0 = p.weight
-    #        syn.obj.wmax = p.weight*p.LTP_factor
-    #        syn.obj.wmin = p.weight*p.LTD_factor
-    #        syn.obj.learning_rate_w_LTP = p.learning_rate_w
-    #        syn.obj.learning_rate_w_LTD = p.learning_rate_w
-    #        syn.obj.learning_rate_thresh_LTP = p.learning_rate_thresh_LTP
-    #        syn.obj.learning_rate_thresh_LTD = p.learning_rate_thresh_LTD
-    #        syn.obj.thresh_LTD_0 = p.thresh_LTD
-    #        syn.obj.thresh_LTP_0 = p.thresh_LTP
-    #        syn.obj.thresh_LTD_min = p.thresh_LTD_min
-    #        syn.obj.thresh_LTP_min = p.thresh_LTP_min
-    #        syn.obj.thresh_LTD_max = p.thresh_LTD_max
-    #        syn.obj.thresh_LTP_max = p.thresh_LTP_max
-    #        syn.obj.LTD_thresh_factor = p.LTD_thresh_factor
-       #
-    #        self.esyn.append(syn)
-    #        return syn
-       #
-       #
-       #
-    #    elif syntype == 'adaptive_zahra_AMPA':
-    #        syn.obj = h.adaptive_zahra_AMPA(sec(pos))
-    #        syn.obj.gmax = p.gmaxAMPA_spillover
-       #
-    #        self.esyn.append(syn)
-    #        return syn
-
 
     def max_dist(self, axon_excluding=True):
         if not hasattr(self, 'somalist'):
