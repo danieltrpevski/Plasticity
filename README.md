@@ -56,6 +56,7 @@ To reproduce the figures in the article, run the Python files below. Very import
   plas_rates.sh
   plas_weights.sh
   ```
+  
 ### Type 2 simulations - control of supralinear dendritic integration
 - **Figure 6**: run file `pattern_homo_bcm.py`.
   Parameter settings in file `parameters_inh.py`:
@@ -116,6 +117,7 @@ To reproduce the figures in the article, run the Python files below. Very import
   ymax_theta_inh = 60
   tick_theta_inh = 60
   ```
+  
 ### NFBP simulations
 The nonlinear feature binding problem (NFBP) is used to show a case where inhibitory plasticity works in tandem with excitatoty plasticity. The results are shown in two figures:
 - **Figure 12**: run file `nfbp_inh.py`.
