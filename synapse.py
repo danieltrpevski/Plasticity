@@ -16,6 +16,7 @@ class Synapse(object):
         self.source = None
         self.ref_var_ampa = None
         self.ref_var_nmda = None
+        self.ref_var_w_inh = None
 
         self.ref_var_theta_inh = None
         self.ref_var_theta_min_inh = None
@@ -28,6 +29,8 @@ class Synapse(object):
         self.ref_var_cai_nmda = None
         self.ref_var_cali = None
         self.ref_var_caint = None
+        self.ref_var_caint_max = None
+        
         self.erec = None
         self.clustered_flag = False
         self.stim = []

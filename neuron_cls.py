@@ -141,7 +141,7 @@ class Neuron(object):
             syn.obj.theta = p.theta_inh
             syn.obj.learning_rate = p.learning_rate_inh
             syn.obj.n = p.steepness_inh
-            sec.tau_caint = p.tau_caint
+            # sec.tau_caint = p.tau_caint
             syn.obj.sf = p.theta_inh_sf
             syn.obj.caint0 = p.caint0
 

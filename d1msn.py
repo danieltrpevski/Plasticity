@@ -105,6 +105,8 @@ class MSN(n.Neuron):
                 sec.insert("cadyn")
                 sec.taur_cadyn_nmda = p.tau_cadyn_nmda
                 sec.taur_cadyn = p.tau_cadyn
+                sec.insert("caint")
+                sec.tau_caint = p.tau_caint
 
         for sec in self.all:
             sec.Ra = 150
