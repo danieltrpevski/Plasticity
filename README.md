@@ -162,3 +162,18 @@ Parameter settings in file `parameters_inh.py`: same as above for Figure 12, exc
 ymax_winh = 500
 tick_winh = 500
 ```
+In both Figures 12 and 13, all possible input configurations that can solve the NFBP are tested, and the results are averaged. This is done with the Python scripts:
+```
+nfbp_inh_upto3_mpi.py
+nfbp_inh_sym_mpi.py
+```
+The results are analyzed and averaged with the scripts:
+```
+analyze_nfbp_upto3.py
+analyze_nfbp_sym.py
+```
+The bash scripts for running these simulations on a cluster are:
+```
+nfbp_inh_upto3.sh
+nfbp_inh_sym.sh
+```
