@@ -23,8 +23,8 @@ To reproduce the figures in the article, run the Python files below. Very import
   
   simtime = 100000
 
-  erate = 2.3
-  irate = 2.3
+  erate = 2.0
+  irate = 2.0
   new_erate = 1.3*erate
   new_irate = irate
 
