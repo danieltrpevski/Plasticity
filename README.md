@@ -11,7 +11,7 @@ The inhibitory plasticity rule is used in a morphlogically realistic, biophysica
 
 ## How to run
 
-To reproduce the figures in the article, run the Python files below. Very important - for each figure, parameters settings need to be set in the file `parameters_inh.py`.  
+To reproduce the figures in the article, run the Python files below. Very important - for each figure, parameters settings need to be set in the file `parameters_inh.py`. These parameters and their values are listed below for each figure. So, before running a simulation, open the file `parameters_inh.py`, find the parameters listed and set their values.
 
 ### Type 1 simulations - control of neuronal firing rate
 - **Figure 4A**: run file `type1_single_run.py`.
@@ -19,26 +19,29 @@ To reproduce the figures in the article, run the Python files below. Very import
   ```
   record_step = 1
   record_step_v = 1
+  skip_first_x_ms = 20000
   
   simtime = 100000
 
   erate = 2.3
   irate = 2.3
-  new_erate = (1 + 1/3.0)*erate
+  new_erate = 1.3*erate
   new_irate = irate
 
+  theta_min_min_inh = 0.1
   theta_min_inh = 0.1
   steepness_inh = 5
   steepness_inh_s1 = 5
-  learning_rate_inh = 0.2e-3
+  learning_rate_inh = 0.02e-3
   learning_rate_theta_inh = 0
+  start_inh_plasticity = 20000
+  start_inh_plasticity_offset = 20000
   inh_exptype = 'rates'
   ```
   
 - **Figure 4B**: run file `type1_single_run.py`.
   Parameter settings in file `parameters_inh.py`: same as above for Figure 4A, except for the following lines:
   ```
-  new_erate = erate
   inh_exptype = 'weights'
   ```
 - **Figure 5**: this figure is obtained by running the simulations for Figure 4 in parallel on a computing cluster, and averaging the results. The Python scripts are the following:
