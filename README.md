@@ -32,14 +32,14 @@ Run `fbp.py`. Use the provided `parameters.py` file (no parameters need to be se
 Run `nfbp.py`. Use the provided `parameters.py` file (no parameters need to be set).
 
 ### 4) Figure 4 - figure supplement 1.
-Repeat the same runs under 1)-3), but in addition set the following parameters in the file `parameters.py`:
+Repeat the same runs under 1) - 3), but in addition set the following parameters in the file `parameters.py`:
 ```
 max_ca_step = 5
 max_ca_step_LTD = 1
 max_ca_step_LTP = 5
 ```
 ### 5) Figure 4 - figure supplement 2.
-Repeat the same runs under 2)-3), but in addition set the following parameter in the file `parameters.py`:
+Repeat the same runs under 2) - 3), but in addition set the following parameter in the file `parameters.py`:
 ```
 hthresh_LTP = 0.2
 ```
@@ -116,14 +116,14 @@ nfbp.sh
 (If compatible, they can be used as examples for your computing cluster.)
 
 ### 1) Figure 4 - figure supplement 3
-Repeat the same runs under 1)-3), varying the learning rate with the values 0.4, 0.85, 1.7 in the file `parameters.py`.
+Repeat the same runs under 1) - 3), varying the learning rate with the values 0.4, 0.85, 1.7 in the file `parameters.py`.
 ```
 learning_rate_w_LTP = 0.4# 0.85; 1.7
 learning_rate_w_LTD = 0.4# 0.85; 1.7
 ```
 
 ### 2) Figure 4 - figure supplement 2
-Repeat the same runs under 1)-3), varying the metaplasticity rate with the values 1, 2, 3, 4 in the file `parameters.py`.
+Repeat the same runs under 1) - 3), varying the metaplasticity rate with the values 1, 2, 3, 4 in the file `parameters.py`.
 ```
 learning_rate_thresh_LTP = 1# 2; 3; 4
 learning_rate_thresh_LTD = 1# 2; 3; 4
