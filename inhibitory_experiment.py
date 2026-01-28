@@ -737,7 +737,7 @@ class Inhibitory_Experiment(pe.Plasticity_Experiment):
                     # self.asf.append(h.Vector())
                     # self.asf[-1].record(s.obj._ref_active_syn_flag, record_step)
 
-            if self.exptype in ['inhibitory_plasticity', 'nfbp_inh', 'pattern',
+            if self.exptype in ['inhibitory_plasticity', 'pattern',
                                 'pattern_homo', 'pattern_homo_sz', 'pattern_homo_bcm',
                                 'pattern_hetero_bcm', 'pattern_hetero', 'pattern_hetero_amp',
                                 'pattern_cont_hetero_amp']:

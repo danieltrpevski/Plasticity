@@ -52,7 +52,4 @@ ex.set_up_experiment()
 ex.set_up_recording(dendstatobj.dends)
 
 ex.simulate()
-#ex.gmax_derivs()
 ex.plot_results()
-#ex.write_results()
-#ex.save_syn_weights(p.save_weights_file)
