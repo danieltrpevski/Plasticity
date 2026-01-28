@@ -44,20 +44,8 @@ dendstatobj.dends = p.input_dends
 dendstatobj.dend_inputs = [['r', 's', 'y' ], ['y', 'b', 's']]
 dendstatobj.dend_syns = [[10, 10, 10], [10, 10, 10]]
 
-#dendstatobj.dend_inputs = [[2,3], [1,3,4], [2,4], [1,3]]
-#dendstatobj.pf_inputs = [[], [1], [1], [1]]
-#dendstatobj.dend_syns = [[6,6], [6,6,6], [7,5], [6,6]]
-
-#dendstatobj.dend_inputs = [[2,3], [1,3,4], [2,4], [1,3]]
-#dendstatobj.pf_inputs = [[], [1], [1], [1]]
-#dendstatobj.dend_syns = [[6,6], [6,6,6], [7,5], [6,6]]
-#with open('./results_parallel_xor_full_test_set.dat', 'rb') as f:
-#    neurons  = pickle.load(f)
-#input_config = neurons[758]
 ex = pe.Plasticity_Experiment('xor_hom_spillover', cell, dendstatobj = dendstatobj)
 ex.set_up_experiment()
 ex.set_up_recording(p.input_dends)
 ex.simulate()
-#ex.gmax_derivs()
-# ex.plot_results()
-#ex.save_syn_weights(p.save_weights_file)
+ex.plot_results()

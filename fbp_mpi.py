@@ -32,28 +32,31 @@ cell_index = 34
 
 variables = model_sets[cell_index]['variables']
 cell = msn.MSN(variables = variables)
-cell.increase_dend_res(p.independent_dends, 3)
 
-# a = [['r', 's'], ['r', 's', 'y'], ['r', 's', 'b'], ['r', 's', 'y', 'b']]
-# b = [['y', 'b'], ['y', 'b', 'r'], ['y', 'b', 's'], ['y', 'b', 'r', 's']]
+input_dends = p.input_dends
+cell.increase_dend_res(input_dends, 5)
 
-a = [ ['r', 's', 'y']]; b = [['y', 'b', 'r']]
+a = [['r', 's', 'y']]
+b = [[]]
 
 all_combinations = []
 for element in itertools.product(a,b):
     all_combinations.append(list(element))
-print(all_combinations)
 
+dend_record_list = input_dends
 weights = []
-lthresh_LTP = []
+thresh_LTP = []
+thresh_LTD = []
 error = []
-dopamine = []
+verror = []
 weights_agh = []
+thresh_LTP_agh = []
+thresh_LTD_agh = []
 
 if rank == 0:
     # 2. Create tasks for the queue of tasks for parallel execution
     tasks = []
-    trials = 3
+    trials = 50
     for c in all_combinations:
         for trial in range(1, trials + 1):
               tasks.append([c, trial])
@@ -74,48 +77,60 @@ for t in tasks:
     print("Running trial %d for input = %s" % (trial, input_comb))
 
     dendstatobj = ds.DendStat()
-    input_dends = rnd.sample(p.independent_dends, 2)
-    dendstatobj.dends = input_dends
+    dendstatobj.dends = rnd.sample(p.independent_dends, 2)
     dendstatobj.dend_inputs = input_comb
-    dendstatobj.dend_syns = [ [10]*len(input_comb[0]), [10]*len(input_comb[1]) ]
+    dendstatobj.dend_syns = [[10]*len(input_comb[0]), [10]*len(input_comb[1])]
 
-    ex = pe.Plasticity_Experiment('xor_hom_spillover', cell, dendstatobj = dendstatobj)
+    ex = pe.Plasticity_Experiment('fbp', cell, dendstatobj = dendstatobj)
     ex.set_up_experiment()
-    ex.set_up_recording(input_dends)
-    ex.cell.print_diffusion()
+    ex.set_up_recording(dendstatobj.dends)
     ex.simulate()
 
     synlist = ex.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
     weights.append([s.ref_var_nmda.to_python() for s in synlist])
-    lthresh_LTP.append([s.ref_var_lthresh_LTP.to_python() for s in synlist])
-    error.append(ex.error(window = 12)[-1])
-    dopamine.append(ex.dopamine_vec.to_python())
+    thresh_LTP.append([s.ref_var_lthresh_LTP.to_python() for s in synlist])
+    thresh_LTD.append([s.ref_var_lthresh_LTD.to_python() for s in synlist])
+    error.append(ex.error(window = 20)[-1])
+    verror.append(ex.error(window = 20)[-2])
     synlist_agh = ex.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
-    weights_agh.append([s.obj.weight for s in synlist_agh])
+    weights_agh.append([s.ref_var_nmda.to_python() for s in synlist_agh])
+    thresh_LTP_agh.append([s.ref_var_lthresh_LTP.to_python() for s in synlist_agh])
+    thresh_LTD_agh.append([s.ref_var_lthresh_LTD.to_python() for s in synlist_agh])
 
 weights = comm.gather(weights, root = 0)
-lthresh_LTP = comm.gather(lthresh_LTP, root = 0)
+thresh_LTP = comm.gather(thresh_LTP, root = 0)
+thresh_LTD = comm.gather(thresh_LTD, root = 0)
 error = comm.gather(error, root = 0)
-dopamine = comm.gather(dopamine, root = 0)
+verror = comm.gather(verror, root = 0)
 weights_agh = comm.gather(weights_agh, root = 0)
+thresh_LTP_agh = comm.gather(thresh_LTP_agh, root = 0)
+thresh_LTD_agh = comm.gather(thresh_LTD_agh, root = 0)
 
 # 5. Calculate and plot results
 if rank == 0:
 
     res1 = []; res2 = []; res3 = []; res4 = [];
-    for w,e,d,h in zip(weights, error, dopamine, lthresh_LTP):
-        res1.extend(w); res2.extend(e); res3.extend(d); res4.extend(h)
-    weights = res1; error = res2; dopamine = res3
+    res5 = []; res6 = []; res7 = []; res8 = [];
+    for w,e,ve,tp,td,wa,tpa,tda in zip(weights, error, verror,
+                                       thresh_LTP, thresh_LTD,
+                                       weights_agh, thresh_LTP_agh, thresh_LTD_agh):
+        res1.extend(w); res2.extend(e); res3.extend(ve); res4.extend(tp);
+        res5.extend(td); res6.extend(wa); res7.extend(tpa); res8.extend(tda);
+    weights = res1; error = res2; verror = res3;
+    thresh_LTP = res4; thresh_LTD = res5;
+    weights_agh = res6; thresh_LTP_agh = res7; thresh_LTD_agh = res8
 
     res_dict = {'weights': weights,
                 'weights_agh': weights_agh,
-                'lthresh_LTP': lthresh_LTP,
+                'thresh_LTP': thresh_LTP,
+                'thresh_LTD': thresh_LTD,
                 'error': error,
-                'dopamine': dopamine,
+                'verror': verror,
                 'trials': trials,
+                'thresh_LTP_agh': thresh_LTP_agh,
+                'thresh_LTD_agh': thresh_LTD_agh,
                 'tw': ex.tthresh.to_python(),
-                't': ex.t.to_python()
                }
     to_save = json.dumps(res_dict)
-    with open('./results/nfbp_hom.dat', 'w', encoding = 'utf-8') as f:
+    with open('./results/fbp.dat', 'w', encoding = 'utf-8') as f:
         json.dump(to_save, f)

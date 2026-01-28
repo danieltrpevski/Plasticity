@@ -32,26 +32,20 @@ cell_index = 34
 
 variables = model_sets[cell_index]['variables']
 cell = msn.MSN(variables = variables)
-
-input_dends = p.input_dends
-cell.increase_dend_res(input_dends, 5)
+cell.increase_dend_res(p.independent_dends, 3)
 
 # a = [['r', 's'], ['r', 's', 'y'], ['r', 's', 'b'], ['r', 's', 'y', 'b']]
 # b = [['y', 'b'], ['y', 'b', 'r'], ['y', 'b', 's'], ['y', 'b', 'r', 's']]
 
-a = [ ['r', 's']]; b = [['y', 'b', 'r']]
-
+a = [ ['r', 's', 'y']]; b = [['y', 'b', 'r']]
 
 all_combinations = []
 for element in itertools.product(a,b):
     all_combinations.append(list(element))
-# all_combinations = all_combinations[0:len(result)-1]
-# for element in itertools.product(b,a):
-#     all_combinations.append(list(element))
+print(all_combinations)
 
-dend_record_list = input_dends
 weights = []
-hthresh_LTP = []
+lthresh_LTP = []
 error = []
 dopamine = []
 weights_agh = []
@@ -59,7 +53,7 @@ weights_agh = []
 if rank == 0:
     # 2. Create tasks for the queue of tasks for parallel execution
     tasks = []
-    trials = 2
+    trials = 3
     for c in all_combinations:
         for trial in range(1, trials + 1):
               tasks.append([c, trial])
@@ -80,25 +74,27 @@ for t in tasks:
     print("Running trial %d for input = %s" % (trial, input_comb))
 
     dendstatobj = ds.DendStat()
-    dendstatobj.dends = rnd.sample(p.independent_dends, 2)
+    input_dends = rnd.sample(p.independent_dends, 2)
+    dendstatobj.dends = input_dends
     dendstatobj.dend_inputs = input_comb
-    dendstatobj.dend_syns = [[10]*len(input_comb[0]), [10]*len(input_comb[1])]
+    dendstatobj.dend_syns = [ [10]*len(input_comb[0]), [10]*len(input_comb[1]) ]
 
-    ex = pe.Plasticity_Experiment('xor_shom_my_spillover', cell, dendstatobj = dendstatobj)
+    ex = pe.Plasticity_Experiment('xor_hom_spillover', cell, dendstatobj = dendstatobj)
     ex.set_up_experiment()
-    ex.set_up_recording(dendstatobj.dends)
+    ex.set_up_recording(input_dends)
+    ex.cell.print_diffusion()
     ex.simulate()
 
-    synlist = ex.get_synapse_list('adaptive_my_shom_NMDA', clustered_flag = True)
+    synlist = ex.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
     weights.append([s.ref_var_nmda.to_python() for s in synlist])
-    hthresh_LTP.append([s.ref_var_hthresh_LTP.to_python() for s in synlist])
+    lthresh_LTP.append([s.ref_var_lthresh_LTP.to_python() for s in synlist])
     error.append(ex.error(window = 12)[-1])
     dopamine.append(ex.dopamine_vec.to_python())
-    synlist_agh = ex.get_synapse_list('adaptive_my_shom_NMDA', clustered_flag = False)
+    synlist_agh = ex.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
     weights_agh.append([s.obj.weight for s in synlist_agh])
 
 weights = comm.gather(weights, root = 0)
-hthresh_LTP = comm.gather(hthresh_LTP, root = 0)
+lthresh_LTP = comm.gather(lthresh_LTP, root = 0)
 error = comm.gather(error, root = 0)
 dopamine = comm.gather(dopamine, root = 0)
 weights_agh = comm.gather(weights_agh, root = 0)
@@ -107,19 +103,19 @@ weights_agh = comm.gather(weights_agh, root = 0)
 if rank == 0:
 
     res1 = []; res2 = []; res3 = []; res4 = [];
-    for w,e,d,h in zip(weights, error, dopamine, hthresh_LTP):
+    for w,e,d,h in zip(weights, error, dopamine, lthresh_LTP):
         res1.extend(w); res2.extend(e); res3.extend(d); res4.extend(h)
     weights = res1; error = res2; dopamine = res3
 
     res_dict = {'weights': weights,
                 'weights_agh': weights_agh,
-                'hthresh_LTP': hthresh_LTP,
+                'lthresh_LTP': lthresh_LTP,
                 'error': error,
                 'dopamine': dopamine,
                 'trials': trials,
                 'tw': ex.tthresh.to_python(),
-                't': ex.tout.tolist()
+                't': ex.t.to_python()
                }
     to_save = json.dumps(res_dict)
-    with open('./results/nfbp_trial.dat', 'w', encoding = 'utf-8') as f:
+    with open('./results/nfbp_hom.dat', 'w', encoding = 'utf-8') as f:
         json.dump(to_save, f)
