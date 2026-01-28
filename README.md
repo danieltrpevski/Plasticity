@@ -16,7 +16,7 @@ nfbp.py
 ```
 To get the results for a specific figure, you need to set some parameters in the file `parameters.py`. For each figure, a list of parameters and their values are given below. Before running the simulation for that figure, find the listed parameters in the "default" file `parameters.py` and set their values. 
 
-Also, many figures show the average performance on the two tasks, the FBP and NFBP. These results were obtained by running many trials on a computing cluster. The code for this is given below.
+Also, many figures show the average performance on the two tasks, the FBP and NFBP. These results were obtained by running many trials on a computing cluster, the code for which is given at the end of this file.
 
 ## Simulations run locally on a desktop/laptop
 
@@ -96,3 +96,35 @@ For panels A<sub>1</sub> - D<sub>1</sub>, in addition set:
 connectivity = 'random'
 ```
 (No additional changes are needed for panels A_2 - D_2).
+
+## Simulations that were run on a computing cluster
+The average performance on the FBP and NFBP was obtained by running the simulations above for many trials on a computing cluster, and averaging the results. In each of the figures above, get the average performance by running one of both of the files below with the parameter settings given above for each figure.
+```
+fbp_mpi.py
+nfbp_mpi.py
+```
+Change the folder and filename to save the results in as needed. To plot the average performance, use:
+```
+analyze_fbp.py
+analyze_nfbp.py
+```
+The bash scripts used on the computing cluster are:
+```
+fbp.sh
+nfbp.sh
+```
+(If compatible, they can be used as examples for your computing cluster.)
+
+### 1) Figure 4 - figure supplement 3
+Repeat the same runs under 1)-3), varying the learning rate with the values 0.4, 0.85, 1.7 in the file `parameters.py`.
+```
+learning_rate_w_LTP = 0.4# 0.85; 1.7
+learning_rate_w_LTD = 0.4# 0.85; 1.7
+```
+
+### 2) Figure 4 - figure supplement 2
+Repeat the same runs under 1)-3), varying the metaplasticity rate with the values 1, 2, 3, 4 in the file `parameters.py`.
+```
+learning_rate_thresh_LTP = 1# 2; 3; 4
+learning_rate_thresh_LTD = 1# 2; 3; 4
+```
