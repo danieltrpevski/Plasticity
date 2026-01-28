@@ -49,7 +49,7 @@ To reproduce the figures in the article, run the Python files below. Very import
   plas_rates_mpi.py
   plas_weights_mpi.py
   ```
-  After obtaining the results, the scripts for analyzing them and plotting Figure 5 are:
+  Change the folder and filename for the saved results as you need/wish. After obtaining the results, the scripts for analyzing them and plotting   Figure 5 are given below. Use the correct folder and filename for the saved results that you will plot.
   ```
   analyze_plas_rates.py
   analyze_plas_weights.py
@@ -176,12 +176,12 @@ Parameter settings in file `parameters_inh.py`: same as above for Figure 12, exc
 ymax_winh = 500
 tick_winh = 500
 ```
-In both Figures 12 and 13, all possible input configurations that can solve the NFBP are tested, and the results are averaged. This is done with the Python scripts:
+In both Figures 12 and 13, all possible input configurations that can solve the NFBP are tested, and the results are averaged. This is done with the two Python scripts, below. Set a folder and filename for saving the results as you need/wish.
 ```
 nfbp_inh_upto3_mpi.py
 nfbp_inh_sym_mpi.py
 ```
-The results are analyzed and averaged with the scripts:
+The results are analyzed and averaged with the scripts below. Use the correct folder and filename of the saved results.
 ```
 analyze_nfbp_upto3.py
 analyze_nfbp_sym.py
