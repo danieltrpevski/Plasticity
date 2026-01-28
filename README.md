@@ -120,6 +120,20 @@ To reproduce the figures in the article, run the Python files below. Very import
   ymax_theta_inh = 60
   tick_theta_inh = 60
   ```
+
+  All figures for type 2 simulations also containg average results from many runs on a computing cluster. The scripts for obtaining these are:
+  ```
+  pattern_homo_bcm_mpi.py
+  pattern_homo_mpi.py
+  pattern_hetero_mpi.py
+  pattern_hetero_amp.py
+  ```
+  Change the folder and filename for the saved results as you need/wish. To analyze and plot the average results, run:
+  ```
+  analyze_pattern_bcm.py
+  analyze_pattern.py
+  ```
+  using the correct path and filename for the saved results from the simulations on the computing cluster.
   
 ### NFBP simulations
 The nonlinear feature binding problem (NFBP) is used to show a case where inhibitory plasticity works in tandem with excitatoty plasticity. The results are shown in two figures:
