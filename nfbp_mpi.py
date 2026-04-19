@@ -34,8 +34,8 @@ variables = model_sets[cell_index]['variables']
 cell = msn.MSN(variables = variables)
 cell.increase_dend_res(p.independent_dends, 3)
 
-# a = [['r', 's'], ['r', 's', 'y'], ['r', 's', 'b'], ['r', 's', 'y', 'b']]
-# b = [['y', 'b'], ['y', 'b', 'r'], ['y', 'b', 's'], ['y', 'b', 'r', 's']]
+a = [['r', 's'], ['r', 's', 'y'], ['r', 's', 'b'], ['r', 's', 'y', 'b']]
+b = [['y', 'b'], ['y', 'b', 'r'], ['y', 'b', 's'], ['y', 'b', 'r', 's']]
 
 a = [ ['r', 's', 'y']]; b = [['y', 'b', 'r']]
 
@@ -53,7 +53,7 @@ weights_agh = []
 if rank == 0:
     # 2. Create tasks for the queue of tasks for parallel execution
     tasks = []
-    trials = 3
+    trials = 7
     for c in all_combinations:
         for trial in range(1, trials + 1):
               tasks.append([c, trial])
@@ -88,7 +88,7 @@ for t in tasks:
     synlist = ex.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
     weights.append([s.ref_var_nmda.to_python() for s in synlist])
     lthresh_LTP.append([s.ref_var_lthresh_LTP.to_python() for s in synlist])
-    error.append(ex.error(window = 12)[-1])
+    error.append(ex.error(window = 20)[-1])
     dopamine.append(ex.dopamine_vec.to_python())
     synlist_agh = ex.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
     weights_agh.append([s.obj.weight for s in synlist_agh])
@@ -117,5 +117,5 @@ if rank == 0:
                 't': ex.t.to_python()
                }
     to_save = json.dumps(res_dict)
-    with open('./results/nfbp_hom.dat', 'w', encoding = 'utf-8') as f:
+    with open('./results/nfbp_wmax_1_4.dat', 'w', encoding = 'utf-8') as f:
         json.dump(to_save, f)
