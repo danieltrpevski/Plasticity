@@ -40,9 +40,9 @@ irate = 1.2
 pos = 0.05
 # NMDA parameters
 
-Mg = 1.0#1.4#
-alpha = 0.062#0.099#
-eta = 0.381679389#0.055#
+Mg = 1.0
+alpha = 0.062
+eta = 0.381679389
 
 g_ramp_max = 0.000255
 nmda_ampa_ratio = 1
@@ -55,17 +55,17 @@ U = 0.3
 u0 = 0.0
 tauF = 5.0
 
-gAMPAmax_plateau = 1.5*1.0e-3#0.75*1.0e-3
-gNMDAmax_plateau = 3.5*1.0e-3#4.5*1.0e-3
+gAMPAmax_plateau = 1.5*1e-3
+gNMDAmax_plateau = 3.5*1e-3
 gGABAmax_plateau = 1.5e-3
 nmda_ampa_ratio = gNMDAmax_plateau/gAMPAmax_plateau
 ratio_glutamate_syn = 1.0
 ratio_distributed_synapses = 0.2
 nmda_ca_fraction = 0.175
 
-gmaxAMPA_spillover = 1.5e-3 #0.015
+gmaxAMPA_spillover = 1.5e-3
 gmaxNMDA_spillover = 2.5e-3
-gmaxNMDAe_spillover = 4.5e-3 #0.0075
+gmaxNMDAe_spillover = 4.5e-3
 gmaxAMPA_pf = 2.5e-3
 gmaxNMDA_pf = 4.5e-3
 ampa_alpha = 12.5
@@ -122,7 +122,7 @@ plateau_cluster_size = 20
 plateau_cluster_size_max = 41
 cluster_start_pos = 0.45
 cluster_end_pos = 0.60
-xor_input_window = 30#35
+xor_input_window = 30
 xor_input_size = 20
 syns_per_feature = 5
 
@@ -141,7 +141,7 @@ distributed_input_rate = 1000.0/40
 distributed_input_start = 200
 distributed_input_end = 230
 distributed_input_size = 0
-distributed_input_window = 75#35
+distributed_input_window = 75
 correlated_distributed_inputs = False
 
 ramp_syn_rate = 100.0
@@ -221,10 +221,10 @@ learning_rate_thresh_KD_LTD = 0.05
 lthresh_LTP_min = 0.01
 threshold_scale_factor = 1.0
 
-n1 = 2#200
-n2 = 16#1000
-KD1 = 0.02#0.025#0.004
-KD2 = 0.6#0.0525
+n1 = 2
+n2 = 16
+KD1 = 0.02
+KD2 = 0.6
 KD2_min = 0.02
 KD1_min = 0.005
 KD_LTD = 0.0002
