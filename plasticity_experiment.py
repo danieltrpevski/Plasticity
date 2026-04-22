@@ -1846,10 +1846,12 @@ class Plasticity_Experiment(e.Experiment):
                     if plot_what in ['lthresh_LTP', 'hthresh_LTP', 'thresh_LTD']:
                         if plot_what not in ['thresh_LTD']:
                             inds, peaks = ss.find_peaks(l[i].ref_var_cai.to_python(), height = p.thresh_LTP)
+                            inds2 = inds[p.max_ca_first_elem::p.max_ca_step_LTP];
+                            peaks2 = peaks['peak_heights'][p.max_ca_first_elem::p.max_ca_step_LTP]
                         else:
                             inds, peaks = ss.find_peaks(l[i].ref_var_cali.to_python(), height = p.thresh_LTD)
-                        inds2 = inds[p.max_ca_first_elem::p.max_ca_step];
-                        peaks2 = peaks['peak_heights'][p.max_ca_first_elem::p.max_ca_step]
+                            inds2 = inds[p.max_ca_first_elem::p.max_ca_step_LTD];
+                            peaks2 = peaks['peak_heights'][p.max_ca_first_elem::p.max_ca_step_LTD]
                         tinds = np.asarray(self.tout)[list(inds2)]
                         if (i%10 == 0):
                             print("This synapse %d has a \%10 = 0 ", i)

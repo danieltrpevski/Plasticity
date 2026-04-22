@@ -4,7 +4,6 @@ Created on Thu Dec 15 17:48:41 2016
 
 @author: daniel
 """
-import pandas as pd
 import json
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -56,8 +55,9 @@ tw = np.asarray(tw)*1e-3
 indices_four = [3, 7, 11, 12, 13, 14, 18, 22, 26, 27, 28, 29, 30]
 all_indices = (np.arange(0, 31, 1)).tolist()
 indices_three = list(set(all_indices) - set(indices_four))
+num_stimuli = 600
 
-er = np.reshape(error, (len(result), trials, int(400/20))) #int(640/12)
+er = np.reshape(error, (len(result), trials, int(num_stimuli/20))) #int(640/12)
 e1 = er[indices_three]
 e1 = (1 - e1)*100
 me1 = np.mean(e1, axis = (0,1)); se1 = np.std(e1, axis = (0,1))
@@ -69,22 +69,22 @@ me2 = np.mean(e2, axis = (0,1)); se2 = np.std(e2, axis = (0,1))
 fig = plt.figure(figsize = (p.fig_width, p.fig_height))
 ax = fig.add_subplot(111)
 # xval = np.arange(12, 640+12, 12)
-xval = np.arange(20, 420, 20)
+xval = np.arange(20, num_stimuli + 20, 20)
 
-pal = sns.color_palette(); #color_inh = pal[3]; color_exc = pal[-2]
+pal = sns.color_palette("colorblind"); #color_inh = pal[3]; color_exc = pal[-2]
 ax.plot(xval[0:xval.size], np.ones((xval.size,))*87.5, color = 'gray', linewidth = 2.0, linestyle = '--')
 # ax.plot(xval[0:xval.size-1], np.ones((xval.size-1,))*100, color = 'gray', linewidth = 1.5, linestyle = '--')
-ax.plot(xval[0:xval.size], me1, color = '#DD8452', linewidth = 3.0)
-ax.fill_between(xval[0:xval.size], me1-se1, me1+se1, color = '#DD8452', alpha = 0.2)
-ax.plot(xval[0:xval.size], me2, color = '#55A868', linewidth = 3.0)
-ax.fill_between(xval[0:xval.size], me2-se2, me2+se2, color = '#55A868', alpha = 0.2)
+ax.plot(xval[0:xval.size], me1, color = pal[4], linewidth = 3.0)
+ax.fill_between(xval[0:xval.size], me1-se1, me1+se1, color = pal[4], alpha = 0.2)
+ax.plot(xval[0:xval.size], me2, color = pal[1], linewidth = 3.0)
+ax.fill_between(xval[0:xval.size], me2-se2, me2+se2, color = pal[1], alpha = 0.2)
 ax.set_xlabel('# of patterns')
-ax.set_xlim(0,420);
-ax.set_xticks([0,200,400])
+ax.set_xlim(0,num_stimuli + 20);
+ax.set_xticks([0,int(num_stimuli/2),num_stimuli])
 
 ax.set_ylabel('Score (%)')
-ax.set_ylim([30, 105])
-ax.set_yticks([50, 100])
+ax.set_ylim([0, 105])
+ax.set_yticks([0, 50, 100])
 plt.show()
 
 for e in error:

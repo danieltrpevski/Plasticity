@@ -4,7 +4,6 @@ Created on Thu Dec 15 17:48:41 2016
 
 @author: daniel
 """
-import pandas as pd
 import json
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -21,7 +20,7 @@ def ferror(vector, window):
 sns.set(font_scale = 2.0)
 sns.set_style("ticks")
 
-filename = './results/metaplasticity/fbp_rate_085.dat'
+filename = './results/metaplasticity/fbp.dat'
 with open(filename, 'r', encoding = 'utf-8') as f:
     fload  = json.load(f)
     res_dict = json.loads(fload)
