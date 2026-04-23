@@ -43,9 +43,9 @@ with open(filename, 'r', encoding = 'utf-8') as f:
 print("Loading done!")
 
 weights = res_dict['weights']
-weights_agh = res_dict['weights_agh']
-lthresh_LTP = res_dict['lthresh_LTP']
-# rewards_delivered = res_dict['rewards_delivered']
+# weights_agh = res_dict['weights_agh']
+# lthresh_LTP = res_dict['lthresh_LTP']
+rewards_delivered = res_dict['rewards_delivered']
 error = res_dict['error']
 tw = res_dict['tw']
 # t = res_dict['t']
