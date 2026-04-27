@@ -1786,7 +1786,7 @@ class Plasticity_Experiment(e.Experiment):
                                  'thresh_LTD']:
                     if plot_what in ['wampa', 'wnmda']:
                         axess[-1].yaxis.set_ticks([0, 100, int(p.LTP_factor*100)])
-                        axess[-1].set_ylim(0, int(p.LTP_factor*100))
+                        axess[-1].set_ylim(p.ymin_w, p.ymax_w)
                     color, linestyle, marker = self.set_color(syn.source)
                     if plot_what in ['wampa', 'wnmda', 'winh', 'theta_inh', 'theta_min_inh']:
                         if i < p.xor_input_size:
@@ -1890,9 +1890,9 @@ class Plasticity_Experiment(e.Experiment):
 
             axess[-1].set_title("Dendrite %d" % r[i-1])
             if plot_what in ['lthresh_LTP']:
-                axess[-1].plot(tinds, 1000*p.hthresh_LTP*np.ones(len(tinds),), color = 'gray', linestyle = '--')
+                axess[-1].plot(self.tout, 1000*p.hthresh_LTP*np.ones(self.tout.shape), color = 'gray', linestyle = '--')
                 if self.exptype in ['xor_hom_spillover']:
-                    axess[-2].plot(tinds, 1000*p.hthresh_LTP*np.ones(len(tinds),), color = 'gray', linestyle = '--')
+                    axess[-2].plot(self.tout, 1000*p.hthresh_LTP*np.ones(self.tout.shape), color = 'gray', linestyle = '--')
                 # axess[-2].plot(tinds, 1000*p.hthresh_LTP*np.ones(len(tinds),), color = 'gray', linestyle = '--')
             if plot_what in ['thresh_LTD']:
                 axess[-1].set_yticks([0,p.tick_thresh_LTD_clus]);
