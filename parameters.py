@@ -200,6 +200,8 @@ reward_length = 50
 session_length = 600
 test_set_size_per_group = 1
 test_set_size = test_set_size_per_group*4
+num_modulated_patterns = num_different_stimuli*10
+weight_modulation = 0.01
 
 window_error = 20
 record_step_thresh = session_length/2
