@@ -182,7 +182,7 @@ save_weights_file = 'one_neuron.dat'
 load_weights_file = 'one_neuron.dat'
 random_training_sequence = True
 adaptive_distributed_inputs = True
-plot_distributed_inputs = True
+plot_distributed_inputs = False
 # if distributed_input_size > 0:
 #     plot_distributed_inputs = True
 long_simulation = False
@@ -201,7 +201,8 @@ session_length = 600
 test_set_size_per_group = 1
 test_set_size = test_set_size_per_group*4
 num_modulated_patterns = num_different_stimuli*10
-weight_modulation = 0.01
+weight_modulation = 0.06
+threshold_buffer = 1.0
 
 window_error = 20
 record_step_thresh = session_length/2
