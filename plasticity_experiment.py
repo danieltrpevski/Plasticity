@@ -547,6 +547,15 @@ class Plasticity_Experiment(e.Experiment):
                                 self.mlist[-1].append(h.Vector())
                                 self.mlist[-1][-1].record(i._ref_m, record_step)
 
+            if self.exptype == 'mod_nfbp':
+                self.lthresh_LTP_init = []
+                self.thresh_LTD_init = []
+                for s in synlist:
+                    self.lthresh_LTP_init.append(h.Vector())
+                    self.thresh_LTD_init.append(h.Vector())
+                    self.lthresh_LTP_init[-1].record(s.sec(s.pos)._ref_cai, 0.1)
+                    self.thresh_LTD_init[-1].record(s.sec(s.pos)._ref_cali, 0.1)
+
         if self.exptype in ['record_ca', 'record_ca_dist']:
             self.m = []
             self.ica_nmda = []
@@ -1846,11 +1855,11 @@ class Plasticity_Experiment(e.Experiment):
 
                     if plot_what in ['lthresh_LTP', 'hthresh_LTP', 'thresh_LTD']:
                         if plot_what not in ['thresh_LTD']:
-                            inds, peaks = ss.find_peaks(l[i].ref_var_cai.to_python(), height = p.thresh_LTP)
+                            inds, peaks = ss.find_peaks(l[i].ref_var_cai.to_python(), height = p.thresh_LTP_min)
                             inds2 = inds[p.max_ca_first_elem::p.max_ca_step_LTP];
                             peaks2 = peaks['peak_heights'][p.max_ca_first_elem::p.max_ca_step_LTP]
                         else:
-                            inds, peaks = ss.find_peaks(l[i].ref_var_cali.to_python(), height = p.thresh_LTD)
+                            inds, peaks = ss.find_peaks(l[i].ref_var_cali.to_python(), height = p.thresh_LTD_min)
                             inds2 = inds[p.max_ca_first_elem::p.max_ca_step_LTD];
                             peaks2 = peaks['peak_heights'][p.max_ca_first_elem::p.max_ca_step_LTD]
                         tinds = np.asarray(self.tout)[list(inds2)]
@@ -2122,7 +2131,7 @@ class Plasticity_Experiment(e.Experiment):
                 self.cvode = h.CVode()
                 self.cvode.active(1)
                 self.cvode.atol(p.absolute_integrator_tolerance)
-            h.init()
+
             h.tstop = simtime
             fih3 = h.FInitializeHandler((self.seti_print_status))
             if self.exptype in ['xor','xor_hom', 'xor_test_set', 'xor_gen', 'xor_spillover',
@@ -2151,10 +2160,18 @@ class Plasticity_Experiment(e.Experiment):
                                     'nfbp_inh', 'fbp',
                                     'mod_nfbp']:
                     fih5 = h.FInitializeHandler((self.set_exglu_weights))
+                # if self.exptype in ['mod_nfbp']:
+                #     fih6 = h.FInitializeHandler((self.seti_thresholds))
                 print("Reward times"); print(self.reward_times)
                 print("Xor input times"); print(self.xor_input_times)
 
-            h.run()
+            h.init()
+            if self.exptype in ['mod_nfbp']:
+                h.continuerun(p.first_training_input_start + p.num_different_stimuli*p.session_length)
+                self.set_thresholds()
+                h.continuerun(h.tstop)
+            else:
+                h.run()
 
         end = time.time()
         print("It took %.2f hours or %.4f seconds to simulate." % ((end-start)/3600 , (end-start)))
@@ -2209,7 +2226,7 @@ class Plasticity_Experiment(e.Experiment):
         times = (np.unique(times)).tolist()
         for i,t in enumerate(times):
             h.cvode.event(t, (self.seti_stimulus_flag, 1))
-            if self.exptype == 'mod_nfbp' and i < p.num_modulated_patterns:
+            if self.exptype == 'mod_nfbp' and i > 4 and i < p.num_modulated_patterns:
                 h.cvode.event(t, (self.modulate_weights, 1))
 
     def seti_stimulus_flag(self, flag):
@@ -2242,6 +2259,19 @@ class Plasticity_Experiment(e.Experiment):
         else:
             for s in synlist:
                 s.obj.weight -= p.weight_modulation
+
+    def seti_thresholds(self):
+        h.cvode.event(p.first_training_input_start + p.num_different_stimuli*p.session_length, (self.set_thresholds))
+
+    def set_thresholds(self):
+        synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+        for tp, td, s in zip(self.lthresh_LTP_init, self.thresh_LTD_init, synlist):
+            s.obj.thresh_LTP = (1 + p.threshold_buffer) * np.max(tp.to_python()[0:(p.first_training_input_start + 4*p.session_length)*10])
+            s.obj.thresh_LTD = (1 + p.threshold_buffer) * np.max(td.to_python()[0:(p.first_training_input_start + 4*p.session_length)*10])
+
+        for tp, td in zip(self.lthresh_LTP_init, self.thresh_LTD_init):
+            tp = h.Vector()
+            td = h.Vector()
 
     def seti_reset_calcium(self, xor_input_times):
         times = []
