@@ -2133,6 +2133,7 @@ class Plasticity_Experiment(e.Experiment):
                 self.cvode.atol(p.absolute_integrator_tolerance)
 
             h.tstop = simtime
+            h.init()
             fih3 = h.FInitializeHandler((self.seti_print_status))
             if self.exptype in ['xor','xor_hom', 'xor_test_set', 'xor_gen', 'xor_spillover',
                                 'xor_hom_spillover', 'xor_spillover_test','xor_shom_spillover',
@@ -2160,18 +2161,19 @@ class Plasticity_Experiment(e.Experiment):
                                     'nfbp_inh', 'fbp',
                                     'mod_nfbp']:
                     fih5 = h.FInitializeHandler((self.set_exglu_weights))
-                # if self.exptype in ['mod_nfbp']:
-                #     fih6 = h.FInitializeHandler((self.seti_thresholds))
+                if self.exptype in ['mod_nfbp']:
+                    fih6 = h.FInitializeHandler((self.set_thresholds))
                 print("Reward times"); print(self.reward_times)
                 print("Xor input times"); print(self.xor_input_times)
 
-            h.init()
-            if self.exptype in ['mod_nfbp']:
-                h.continuerun(p.first_training_input_start + p.num_different_stimuli*p.session_length)
-                self.set_thresholds()
-                h.continuerun(h.tstop)
-            else:
-                h.run()
+
+            h.run()
+            # if self.exptype in ['mod_nfbp']:
+            #     h.continuerun(p.first_training_input_start + p.num_different_stimuli*p.session_length)
+            #     self.set_thresholds()
+            #     h.continuerun(h.tstop)
+            # else:
+            #     h.run()
 
         end = time.time()
         print("It took %.2f hours or %.4f seconds to simulate." % ((end-start)/3600 , (end-start)))
@@ -2226,7 +2228,7 @@ class Plasticity_Experiment(e.Experiment):
         times = (np.unique(times)).tolist()
         for i,t in enumerate(times):
             h.cvode.event(t, (self.seti_stimulus_flag, 1))
-            if self.exptype == 'mod_nfbp' and i > 4 and i < p.num_modulated_patterns:
+            if self.exptype == 'mod_nfbp' and i < p.num_modulated_patterns:
                 h.cvode.event(t, (self.modulate_weights, 1))
 
     def seti_stimulus_flag(self, flag):
@@ -2260,15 +2262,21 @@ class Plasticity_Experiment(e.Experiment):
             for s in synlist:
                 s.obj.weight -= p.weight_modulation
 
-    def seti_thresholds(self):
-        h.cvode.event(p.first_training_input_start + p.num_different_stimuli*p.session_length, (self.set_thresholds))
+    # def seti_thresholds(self):
+    #     h.cvode.event(p.first_training_input_start + p.num_different_stimuli*p.session_length, (self.set_thresholds))
 
     def set_thresholds(self):
         synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
-        for tp, td, s in zip(self.lthresh_LTP_init, self.thresh_LTD_init, synlist):
-            s.obj.thresh_LTP = (1 + p.threshold_buffer) * np.max(tp.to_python()[0:(p.first_training_input_start + 4*p.session_length)*10])
-            s.obj.thresh_LTD = (1 + p.threshold_buffer) * np.max(td.to_python()[0:(p.first_training_input_start + 4*p.session_length)*10])
-
+        for s in synlist:
+            dend = self.extract_number_from_string(s.sec.name())
+            s.obj.thresh_LTP = p.threshs_LTP[p.independent_dends.index(dend)]
+            s.obj.thresh_LTD = p.threshs_LTD[p.independent_dends.index(dend)]
+        # for tp, td, s in zip(self.lthresh_LTP_init, self.thresh_LTD_init, synlist):
+            # s.obj.thresh_LTP = (1 + p.threshold_buffer) * np.max(tp.to_python()[0:(p.first_training_input_start + 4*p.session_length)*10])
+            # s.obj.thresh_LTD = (1 + p.threshold_buffer) * np.max(td.to_python()[0:(p.first_training_input_start + 4*p.session_length)*10])
+        # print("\nTHE PRESET THRESHOLDS ARE:")
+        # for s in synlist:
+        #     print(s.sec.name(), s.obj.thresh_LTP, s.obj.thresh_LTD)
         for tp, td in zip(self.lthresh_LTP_init, self.thresh_LTD_init):
             tp = h.Vector()
             td = h.Vector()
@@ -2429,6 +2437,13 @@ class Plasticity_Experiment(e.Experiment):
             self.spike_flags.append(spike_flag)
             h.cvode.event(h.t + p.reward_length, (self.seti_dopamine_var, 1))
 
+
+    def extract_number_from_string(self, s):
+        match = re.search(r"dend\[(\d+)\]", s)
+        if match:
+            number = int(match.group(1))
+        return number
+
     def uniform_min_distance(self, start, end, elem_list, distance):
         attempts = 0
         while attempts < 10000:
@@ -2464,7 +2479,7 @@ class Plasticity_Experiment(e.Experiment):
             step = 1.0/nsegs
             l = (np.arange(0, 1, step)).tolist()
             l.pop(0); l.append(1);
-            # print("Dend %d =" %(d)); print(l)
+
             self.spillover_indices.append(l)
             self.num_syns_in_segment.append([0 for i in range(0, nsegs)])
 
@@ -2565,9 +2580,6 @@ class Plasticity_Experiment(e.Experiment):
                 self.distributed_input.append(h.VecStim())
                 self.distributed_input[i].play(self.distributed_input_vectors[i])
 
-#        print("Created %d 1L NetStims and %d NetCons to supply them with inputs." % (len(self.burst_input), len(self.burst_input_nc))
-#        print("And this many NetCon groups"); print([len(x) for x in self.xor_nc])
-
     def create_training_set(self, size):
         training_set = []
 
@@ -2653,9 +2665,6 @@ class Plasticity_Experiment(e.Experiment):
             dend_lengths = self.cell.get_dend_proportions(dist_dends)
             if p.rnd_exptype == 'spillover':
                 spillover_indices, exglu_list, exglusec_list,num_syns_in_segment = self.segment_dendrites(dist_dends, 20)
-                # print(spillover_indices)
-                # print(exglu_list)
-                # print(exglusec_list)
                 self.stat = []
 
             for i, xv in enumerate(self.xor_input_vectors):
@@ -2753,6 +2762,7 @@ class Plasticity_Experiment(e.Experiment):
                         self.exglu[-1].tau = p.exglu_tau
                         self.exglu[-1].refrac = p.session_length - p.training_input_length
                     for group, numsyns in zip(di, ds):
+                        feature = group
                         if group == 'r':
                             group = 1
                         elif group == 'y':
@@ -2763,6 +2773,8 @@ class Plasticity_Experiment(e.Experiment):
                             group = 4
 
                         sources = rnd.sample([i for i in range(0,p.xor_input_size)], numsyns)
+                        print("\nInserting spines and synapses on them:")
+                        print("Feature %s" % feature)
                         for i,s in enumerate(sources):
                             gen = h.VecStim()
                             self.xor_input[group-1].append(gen)
@@ -2773,8 +2785,7 @@ class Plasticity_Experiment(e.Experiment):
                             offset =  ((end_pos -start_pos)*dist/numsyns)/dist
                             pos = start_pos + offset*(group-1)/3 + \
                                   (end_pos - start_pos -offset + offset*(group-1)/3)*i*syn_step
-                            print(dist, offset)
-                            print(pos)
+                            print("Spine %d on dend %d at position %.3f" % (i, dend, pos))
                             # pos = start_pos + (end_pos-start_pos)*self.cell.num_spines_on_dends[dend]*syn_step
     #                        print(self.cell.num_spines_on_dends[dend])
     #                        print(start_pos, end_pos, pos)

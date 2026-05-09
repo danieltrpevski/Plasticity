@@ -274,7 +274,7 @@ class MSN(n.Neuron):
         spine_step = 1.0/num_spines
         for sec in section_list:
             for i in range(0, num_spines):
-                pos = end_pos - (end_pos - start_pos)*i*spine_step
+                pos = start_pos + (end_pos - start_pos)*i*spine_step
                 spine_name = 'spine_' + self.dendlist[sec].name() + '(' + str(pos) + ')'
                 s = sp.Spine(self.dendlist[sec], spine_name)
                 self.spines.append(s)
