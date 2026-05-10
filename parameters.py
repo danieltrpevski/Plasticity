@@ -119,7 +119,7 @@ plateau_syn_rate = 400
 plateau_burst_start = 200
 plateau_burst_end = 230
 plateau_cluster_size = 20
-plateau_cluster_size_max = 41
+plateau_cluster_size_max = 20
 cluster_start_pos = 0.45
 cluster_end_pos = 0.60
 xor_input_window = 30
@@ -200,8 +200,8 @@ reward_length = 50
 session_length = 600
 test_set_size_per_group = 1
 test_set_size = test_set_size_per_group*4
-num_modulated_patterns = num_different_stimuli*10
-weight_modulation = 0.06
+num_modulated_patterns = num_different_stimuli*20
+weight_modulation = 0.0
 threshold_buffer = 1.0
 
 window_error = 20
@@ -245,24 +245,29 @@ id2 = [3, 5, 8, 12, 15, 22, 26, 52]
 id3 = [3, 5, 8, 12, 15, 22, 26, 4, 35]
 id4 = [3, 4, 8, 12, 28, 35, 36, 53]
 
-sp0 = [0.1, 0.28, 0.315, 0.25, 0.25, 0.15, 0.22, 0.75]
-ep0 = [0.25, 0.45, 0.4, 0.38, 0.3, 0.3, 0.35, 0.92]
+sp0 = [0.1, 0.25, 0.315, 0.2, 0.15, 0.01, 0.22, 0.55]
+ep0 = [0.25, 0.40, 0.4, 0.3, 0.3, 0.15, 0.32, 0.75]
 
-sp1 = [0.25, 0.45, 0.4, 0.35, 0.38, 0.3, 0.33, 0.25]
-ep1 = [0.4, 0.6, 0.5, 0.45, 0.55, 0.45, 0.45, 0.45]
+sp1 = [0.25, 0.45, 0.4, 0.35, 0.38, 0.3, 0.32, 0.25]
+ep1 = [0.4, 0.6, 0.5, 0.45, 0.55, 0.45, 0.42, 0.45]
 
 sp2 = [0.45, 0.65, 0.55, 0.5, 0.62, 0.5, 0.5, 0.55]
 ep2 = [0.6, 0.8, 0.65, 0.6, 0.77, 0.65, 0.65, 0.99]
 
 sp3 = [0.6, 0.8, 0.65, 0.6, 0.77, 0.65, 0.65, 0.60, 0.05]
-ep3 = [0.75, 0.95, 0.75, 0.7, 0.97, 0.85, 0.8, 0.75, 0.35]
+ep3 = [0.75, 0.95, 0.75, 0.7, 0.97, 0.85, 0.75, 0.75, 0.35]
 
 sp4 = [0.85, 0.85, 0.8, 0.78, 0.70, 0.65, 0.5, 0.80]
 ep4 = [0.99, 0.99, 0.9, 0.87, 0.99, 0.91, 0.99, 0.91]
 
+thresh_LTP_sp1 = [0.013, 0.017, 0.011, 0.012, 0.016, 0.018, 0.011, 0.017 ]
+thresh_LTD_sp1 = [0.008, 0.008, 0.007, 0.007, 0.007, 0.008, 0.007, 0.0075]
+
 independent_dends = id1
 cluster_start_poss = sp1
 cluster_end_poss = ep1
+threshs_LTP = thresh_LTP_sp1
+threshs_LTD = thresh_LTD_sp1
 distal_dends = [2, 3, 4, 5, 8, 9, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 24, 26, 27, 28, 29, 33, 34, 35, 36, 37, 38, 40, 41, 44, 45, 46, 47, 48, 50, 51, 52, 53, 56]
 segment_length = 20
 
