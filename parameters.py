@@ -11,7 +11,7 @@ results_directory = './results'
 #      1. General recording and simulation parameters       #
 #-----------------------------------------------------------#
 step = 20.0
-record_step = 1
+record_step = 10
 record_step_v = 1
 record_step_PDC = 1000
 skip_first_x_ms = 100
@@ -185,6 +185,7 @@ adaptive_distributed_inputs = True
 plot_distributed_inputs = False
 # if distributed_input_size > 0:
 #     plot_distributed_inputs = True
+plot_patterns = False
 long_simulation = False
 adaptive_timestep_integration = False
 absolute_integrator_tolerance = 1e-2
@@ -201,8 +202,10 @@ session_length = 600
 test_set_size_per_group = 1
 test_set_size = test_set_size_per_group*4
 num_modulated_patterns = num_different_stimuli*20
-weight_modulation = 0.0
-threshold_buffer = 1.0
+weight_modulation = 0.03
+threshold_buffer = 0.2
+cal12_modulation = 0.9e-6
+cal13_modulation = 0.225e-6
 
 window_error = 20
 record_step_thresh = session_length/2
@@ -238,7 +241,7 @@ n_LTD_pf = 1000
 random_weights = False
 read_input_config_from_file = False
 input_config_file = 'xor_inputs_to_dends.dat'#'xor_dense.dat'
-input_dends = [8, 15] #[3, 5, 8, 12, 15, 22, 26, 35, 41, 47, 53, 57]#
+input_dends = [12, 52] #[3, 5, 8, 12, 15, 22, 26, 35, 41, 47, 53, 57]#
 id0 = [3, 5, 8, 12, 15, 22, 26, 18]
 id1 = [3, 5, 8, 12, 15, 22, 26, 52]
 id2 = [3, 5, 8, 12, 15, 22, 26, 52]
@@ -260,8 +263,8 @@ ep3 = [0.75, 0.95, 0.75, 0.7, 0.97, 0.85, 0.75, 0.75, 0.35]
 sp4 = [0.85, 0.85, 0.8, 0.78, 0.70, 0.65, 0.5, 0.80]
 ep4 = [0.99, 0.99, 0.9, 0.87, 0.99, 0.91, 0.99, 0.91]
 
-thresh_LTP_sp1 = [0.013, 0.017, 0.011, 0.012, 0.016, 0.018, 0.011, 0.017 ]
-thresh_LTD_sp1 = [0.008, 0.008, 0.007, 0.007, 0.007, 0.008, 0.007, 0.0075]
+thresh_LTP_sp1 = [0.011, 0.017, 0.011, 0.012, 0.018, 0.02, 0.011, 0.017 ]
+thresh_LTD_sp1 = [0.008, 0.008, 0.007, 0.007, 0.01, 0.01, 0.007, 0.0075]
 
 independent_dends = id1
 cluster_start_poss = sp1
@@ -317,10 +320,10 @@ spike_threshold = -40
 fig_width = 1.5 # 4.0
 fig_height = 2.0 # 3.5
 
-max_ca_first_elem = 3
+max_ca_first_elem = 0
 max_ca_step = 50
-max_ca_step_LTD = 20
-max_ca_step_LTP = 100
+max_ca_step_LTD = 1#20
+max_ca_step_LTP = 1#00
 
 ymin_thresh_LTP = 0
 ymax_thresh_LTP = 5.2
@@ -347,3 +350,5 @@ ymax_w = 200
 
 linewidth = 3.0
 markersize = 3.0
+
+zoom_icon = 0.5
