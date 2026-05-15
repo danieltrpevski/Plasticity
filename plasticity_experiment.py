@@ -822,7 +822,7 @@ class Plasticity_Experiment(e.Experiment):
 
                 if syn.type in ['adaptive_glutamate2']:
                     syn.ref_var_lthresh_LTD = h.Vector(np.ones(( int(p.simtime/p.record_step_thresh)))*syn.obj.thresh_LTD )
-                    syn.ref_var_lthresh_LTp = h.Vector(np.ones(( int(p.simtime/p.record_step_thresh)))*syn.obj.thresh_LTP )
+                    syn.ref_var_lthresh_LTP = h.Vector(np.ones(( int(p.simtime/p.record_step_thresh)))*syn.obj.thresh_LTP )
 
                 elif syn.type in ['adaptive_glutamate_hom']:
                     self.lthresh_LTD.append(h.Vector())
@@ -1855,17 +1855,18 @@ class Plasticity_Experiment(e.Experiment):
 
                     if plot_what in ['lthresh_LTP', 'hthresh_LTP', 'thresh_LTD']:
                         if plot_what not in ['thresh_LTD']:
-                            inds, peaks = ss.find_peaks(l[i].ref_var_cai.to_python(), height = p.thresh_LTP_min)
+                            inds, peaks = self.find_peaks(l[i].ref_var_cai.to_python(), height = p.thresh_LTP_min)
                             inds2 = inds[p.max_ca_first_elem::p.max_ca_step_LTP];
-                            peaks2 = peaks['peak_heights'][p.max_ca_first_elem::p.max_ca_step_LTP]
+                            peaks2 = peaks[p.max_ca_first_elem::p.max_ca_step_LTP]
                         else:
-                            inds, peaks = ss.find_peaks(l[i].ref_var_cali.to_python(), height = p.thresh_LTD_min)
+                            inds, peaks = self.find_peaks(l[i].ref_var_cali.to_python(), height = p.thresh_LTD_min)
                             inds2 = inds[p.max_ca_first_elem::p.max_ca_step_LTD];
-                            peaks2 = peaks['peak_heights'][p.max_ca_first_elem::p.max_ca_step_LTD]
+                            peaks2 = peaks[p.max_ca_first_elem::p.max_ca_step_LTD]
                         tinds = np.asarray(self.tout)[list(inds2)]
                         if (i%10 == 0):
                             print("This synapse %d has a \%10 = 0 ", i)
-                            axess[-1].plot(tinds, peaks2*1000, color = color, linestyle = '', marker = 'o', markersize = p.markersize)
+                            axess[-1].plot(tinds, np.asarray(peaks2)*1000, color = color, linestyle = '', marker = 'o', markersize = p.markersize)
+
 
                 elif plot_what in ['theta_inh', 'theta_min_inh']:
                     axess[-1].plot(self.t, np.multiply(p.theta_inh_sf,l[i].ref_var_caint.to_python()), color = color, linewidth = 0.5)
@@ -1913,7 +1914,56 @@ class Plasticity_Experiment(e.Experiment):
             # elif plot_what in ['thresh_LTD']:
                 # axess[-1].set_xticks([0,100,200,300])
                 # axess[-2].set_xticks([0,100,200,300])
+            if p.plot_patterns and plot_what in ['lthresh_LTP', 'hthresh_LTP', 'thresh_LTD']:
+                from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+                import matplotlib.image as mpimg
+
+                rs = mpimg.imread("./images/rs.png"); ys = mpimg.imread("./images/ys.png")
+                rb = mpimg.imread("./images/rb.png"); yb = mpimg.imread("./images/yb.png")
+                rs_box = OffsetImage(rs, zoom=p.zoom_icon); ys_box = OffsetImage(ys, zoom=p.zoom_icon);
+                rb_box = OffsetImage(ys, zoom=p.zoom_icon); yb_box = OffsetImage(yb, zoom=p.zoom_icon);
+
+                if plot_what in ['lthresh_LTP']:
+                    training_set = self.training_set[p.max_ca_first_elem::p.max_ca_step_LTP]
+                if plot_what in ['lthresh_LTD']:
+                    training_set = self.training_set[p.max_ca_first_elem::p.max_ca_step_LTD]
+                for ts, ind, peak in zip(self.training_set, tinds, (np.asarray(peaks2)*1000).tolist()):
+                    if ts == 'rs':
+                        imagebox = rs_box
+                    elif ts == 'ys':
+                        imagebox = ys_box
+                    elif ts == 'rb':
+                        imagebox = rb_box
+                    elif ts == 'yb':
+                        imagebox = yb_box
+                    ab = AnnotationBbox(imagebox, (ind, peak + 5), frameon=False)
+                    axess[-1].add_artist(ab)
+
         return figs, axess
+
+    def find_peaks(self, signal, height):
+        window = p.session_length
+        start = p.first_training_input_start
+
+        all_inds = []
+        all_peaks = []
+
+        for s in range(int(start/p.record_step), len(signal), int(window/p.record_step)):
+            e = min(s + int(window/p.record_step), len(signal))
+            segment = signal[s:e]
+            inds, props = ss.find_peaks(segment, height = height)
+            if len(inds) == 0:
+                continue
+            # choose the largest peak in this window
+            best = np.argmax(props["peak_heights"])
+
+            peak_ind = inds[best] + s
+            peak_height = props["peak_heights"][best]
+
+            all_inds.append(peak_ind)
+            all_peaks.append(peak_height)
+
+        return all_inds, all_peaks
 
     def write_results(self):
 
@@ -2133,7 +2183,7 @@ class Plasticity_Experiment(e.Experiment):
                 self.cvode.atol(p.absolute_integrator_tolerance)
 
             h.tstop = simtime
-            h.init()
+
             fih3 = h.FInitializeHandler((self.seti_print_status))
             if self.exptype in ['xor','xor_hom', 'xor_test_set', 'xor_gen', 'xor_spillover',
                                 'xor_hom_spillover', 'xor_spillover_test','xor_shom_spillover',
@@ -2161,19 +2211,22 @@ class Plasticity_Experiment(e.Experiment):
                                     'nfbp_inh', 'fbp',
                                     'mod_nfbp']:
                     fih5 = h.FInitializeHandler((self.set_exglu_weights))
-                if self.exptype in ['mod_nfbp']:
-                    fih6 = h.FInitializeHandler((self.set_thresholds))
+                # if self.exptype in ['mod_nfbp']:
+                #     fih6 = h.FInitializeHandler((self.set_thresholds))
                 print("Reward times"); print(self.reward_times)
                 print("Xor input times"); print(self.xor_input_times)
 
 
-            h.run()
-            # if self.exptype in ['mod_nfbp']:
-            #     h.continuerun(p.first_training_input_start + p.num_different_stimuli*p.session_length)
-            #     self.set_thresholds()
-            #     h.continuerun(h.tstop)
-            # else:
-            #     h.run()
+            # h.run()
+            h.init()
+            if self.exptype in ['mod_nfbp']:
+                self.set_learning_rates(False)
+                h.continuerun(p.first_training_input_start + p.num_different_stimuli*p.session_length)
+                self.set_learning_rates(True)
+                self.set_thresholds()
+                h.continuerun(h.tstop)
+            else:
+                h.run()
 
         end = time.time()
         print("It took %.2f hours or %.4f seconds to simulate." % ((end-start)/3600 , (end-start)))
@@ -2229,7 +2282,7 @@ class Plasticity_Experiment(e.Experiment):
         for i,t in enumerate(times):
             h.cvode.event(t, (self.seti_stimulus_flag, 1))
             if self.exptype == 'mod_nfbp' and i < p.num_modulated_patterns:
-                h.cvode.event(t, (self.modulate_weights, 1))
+                h.cvode.event(t, (self.modulate_weights_and_channels, 1))
 
     def seti_stimulus_flag(self, flag):
         h.stimulus_flag = flag
@@ -2252,28 +2305,66 @@ class Plasticity_Experiment(e.Experiment):
             if self.exptype in ['nfbp_inh']:
                 self.reset_caint()
 
-    def modulate_weights(self, flag):
+    def modulate_weights_and_channels(self, flag):
         synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+
         if flag:
             for s in synlist:
                 s.obj.weight += p.weight_modulation
-            h.cvode.event(h.t + p.reward_length, (self.modulate_weights, 0))
+
+            for sp in self.cell.spines:
+                sp.head.pbar_cal12 += p.cal12_modulation
+                sp.head.pbar_cal13 += p.cal13_modulation
+
+            h.cvode.event(h.t + p.training_input_length + p.time_to_reward - 1, (self.modulate_weights_and_channels, 0))
         else:
             for s in synlist:
                 s.obj.weight -= p.weight_modulation
 
+            for sp in self.cell.spines:
+                sp.head.pbar_cal12 -= p.cal12_modulation
+                sp.head.pbar_cal13 -= p.cal13_modulation
+
     # def seti_thresholds(self):
     #     h.cvode.event(p.first_training_input_start + p.num_different_stimuli*p.session_length, (self.set_thresholds))
 
-    def set_thresholds(self):
+    def set_learning_rates(self, flag):
         synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
-        for s in synlist:
+        if flag:
+            for s in synlist:
+                s.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
+                s.obj.learning_rate_w_LTD = p.learning_rate_w_LTD
+                s.obj.learning_rate_thresh_LTP = p.learning_rate_thresh_LTP
+                s.obj.learning_rate_thresh_LTD = p.learning_rate_thresh_LTD
+        else:
+            for s in synlist:
+                s.obj.learning_rate_w_LTP = 0.0
+                s.obj.learning_rate_w_LTD = 0.0
+                s.obj.learning_rate_thresh_LTP = 0.0
+                s.obj.learning_rate_thresh_LTD = 0.0
+
+    def set_thresholds(self):
+        max_LTP = []
+        max_LTD = []
+        synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+        # for s in synlist:
+        #     dend = self.extract_number_from_string(s.sec.name())
+        #     s.obj.thresh_LTP = p.threshs_LTP[p.independent_dends.index(dend)]
+        #     s.obj.thresh_LTD = p.threshs_LTD[p.independent_dends.index(dend)]
+        for tp, td, s in zip(self.lthresh_LTP_init, self.thresh_LTD_init, synlist):
+            max_LTP.append(np.max(tp.to_python()[0:(p.first_training_input_start + 2*p.session_length)*10]))
+            max_LTD.append(np.max(td.to_python()[0:(p.first_training_input_start + 4*p.session_length)*10]))
+
+        mLTP = np.max(max_LTP)
+        mLTD = np.max(max_LTD)
+        for ml, md, s in zip(max_LTP, max_LTD, synlist):
             dend = self.extract_number_from_string(s.sec.name())
-            s.obj.thresh_LTP = p.threshs_LTP[p.independent_dends.index(dend)]
-            s.obj.thresh_LTD = p.threshs_LTD[p.independent_dends.index(dend)]
-        # for tp, td, s in zip(self.lthresh_LTP_init, self.thresh_LTD_init, synlist):
-            # s.obj.thresh_LTP = (1 + p.threshold_buffer) * np.max(tp.to_python()[0:(p.first_training_input_start + 4*p.session_length)*10])
-            # s.obj.thresh_LTD = (1 + p.threshold_buffer) * np.max(td.to_python()[0:(p.first_training_input_start + 4*p.session_length)*10])
+            if ml == mLTP or md == mLTD:
+                factor = 0.0
+            else:
+                factor = p.threshold_buffer
+            s.obj.thresh_LTP = (1 + factor) * ml/mLTP * p.threshs_LTP[p.independent_dends.index(dend)]
+            s.obj.thresh_LTD = (1 + factor) * md/mLTD * p.threshs_LTD[p.independent_dends.index(dend)]
         # print("\nTHE PRESET THRESHOLDS ARE:")
         # for s in synlist:
         #     print(s.sec.name(), s.obj.thresh_LTP, s.obj.thresh_LTD)
@@ -2601,8 +2692,8 @@ class Plasticity_Experiment(e.Experiment):
             else:
                 for i in range(0, p.training_set_size):
                     training_set.append(rnd.choice(['rb', 'rs', 'yb', 'ys']))
-                if p.extra_training_inputs > 0:
-                    training_set = ['rs', 'yb', 'ys', 'rb'] + training_set + ['rs', 'yb', 'ys', 'rb']
+            if p.extra_training_inputs > 0:
+                training_set = ['rs', 'yb', 'ys', 'rb'] + training_set + ['rs', 'yb', 'ys', 'rb']
 
         elif self.exptype in ['xor_test_set', 'xor_spillover_test']:
             for j in range (0,p.test_set_size_per_group):
@@ -3574,57 +3665,37 @@ class Plasticity_Experiment(e.Experiment):
         axes_LTP = []; axes_LTD = [];
 
 #        synlist_nc = self.get_synapse_list('adaptive_shom_NMDA', clustered_flag = True)
-        synlist_nc = self.get_synapse_list('adaptive_cshom_NMDA', clustered_flag = True)
-        self.heatmaps_LTP = []; self.heatmaps_LTD = []
-        syns = [synlist_nc[p.syn_for_threshold]]
-        Ca_LTP = np.linspace(0, 1, p.simtime/p.record_step_thresh)
-        Ca_LTD = np.linspace(0, 0.01, p.simtime/p.record_step_thresh)
+        synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
 
-        for i,s in enumerate(synlist_nc[1:]):
-            if synlist_nc[i].sec != synlist_nc[i-1].sec:
-                syns.append(s)
+        figs_LTP.append(plt.figure());
+        axes_LTP.append(figs_LTP[-1].add_subplot(111));
+        axes_LTP[-1].set_xlabel('t'); axes_LTP[-1].set_ylabel('LTP threshold');
+        # axes_LTP[-1].set_xticks(xticks); axes_LTP[-1].set_xticklabels(xticklabels_LTP);
+        # axes_LTP[-1].set_yticks(yticks); axes_LTP[-1].set_yticklabels(yticklabels);
 
-        for s in syns:
-            lthresh_LTP = s.ref_var_lthresh_LTP.to_python()
-            hthresh_LTP = s.ref_var_hthresh_LTP.to_python()
-            lthresh_LTD = s.ref_var_lthresh_LTD.to_python()
-            curves = []
-            lthreshs = []
-            yticklabels = (np.arange(0, (p.simtime/1000), 10)).tolist()
-            yticks = np.linspace(0, len(lthresh_LTP)-1, 10)
-            xticklabels_LTP = [0, 0.5, 1.0]
-            xticklabels_LTD = [0, 0.005, 0.01]
-            xticks = [0, len(Ca_LTP)/2, len(Ca_LTP)]
+        figs_LTD.append(plt.figure())
+        axes_LTD.append(figs_LTD[-1].add_subplot(111));
+        axes_LTD[-1].set_xlabel('t'); axes_LTD[-1].set_ylabel('LTD threshold');
+        # axes_LTD[-1].set_xticks(xticks); axes_LTD[-1].set_xticklabels(xticklabels_LTD);
+        # axes_LTD[-1].set_yticks(yticks); axes_LTD[-1].set_yticklabels(yticklabels);
 
-            for l, hh, ll in zip(lthresh_LTP, hthresh_LTP, lthresh_LTD):
-                act = self.activator(l, Ca_LTP, p.Hill_coefficient)
-                rep = self.repressor(hh, Ca_LTP, p.Hill_coefficient)
-                curve = (np.multiply(act, rep)).tolist()
-                act_l = self.activator(ll, Ca_LTD, p.Hill_coefficient)
-                curves.append(curve)
-                lthreshs.append(act_l)
-            self.heatmaps_LTP.append(curves)
-            self.heatmaps_LTD.append(lthreshs)
+        for i,s in enumerate(synlist):
+            color, linestyle, marker = self.set_color(s.source)
+            tp = np.asarray(s.ref_var_lthresh_LTP.to_python())*1000
+            td = np.asarray(s.ref_var_lthresh_LTD.to_python())*1000
+            axes_LTP[-1].plot(np.asarray(self.tthresh.to_python())*0.001, tp, color = color, alpha = (i%10 + 1)*0.1, linestyle = linestyle)
+            axes_LTD[-1].plot(np.asarray(self.tthresh.to_python())*0.001, td, color = color, alpha = (i%10 + 1)*0.1, linestyle = linestyle)
 
-            hm_LTP = np.asarray(curves)
-            hm_LTD = np.asarray(lthreshs)
+            inds, peaks = ss.find_peaks(s.ref_var_cai.to_python(), height = 0.0001)
+            inds2 = inds[3::4]; peaks2 = peaks['peak_heights'][3::4]
+            tinds = np.asarray(self.tout)[list(inds2)]
+            axes_LTP[-1].plot(tinds, peaks2*1000, color = color, alpha = (i%10 + 1)*0.1, linestyle = '', marker = 'o', markersize = 2.0)
 
-            figs_LTP.append(plt.figure());
-            axes_LTP.append(figs_LTP[-1].add_subplot(111));
-            axes_LTP[-1].imshow(hm_LTP, cmap = "Purples",
-                                origin = "lower")
+            inds, peaks = ss.find_peaks(s.ref_var_cali.to_python(), height = 0.0001)
+            inds2 = inds[3::4]; peaks2 = peaks['peak_heights'][3::4]
+            tinds = np.asarray(self.tout)[list(inds2)]
+            axes_LTD[-1].plot(tinds, peaks2*1000, color = color, alpha = (i%10 + 1)*0.1, linestyle = '', marker = 'o', markersize = 2.0)
 
-            axes_LTP[-1].set_ylabel('t'); axes_LTP[-1].set_xlabel('LTP threshold');
-            axes_LTP[-1].set_xticks(xticks); axes_LTP[-1].set_xticklabels(xticklabels_LTP);
-            axes_LTP[-1].set_yticks(yticks); axes_LTP[-1].set_yticklabels(yticklabels);
-
-            figs_LTD.append(plt.figure())
-            axes_LTD.append(figs_LTD[-1].add_subplot(111));
-            axes_LTD[-1].imshow(hm_LTD)
-            axes_LTD[-1].set_ylabel('t'); axes_LTD[-1].set_xlabel('LTD threshold');
-            axes_LTD[-1].set_xticks(xticks); axes_LTD[-1].set_xticklabels(xticklabels_LTD);
-            axes_LTD[-1].set_yticks(yticks); axes_LTD[-1].set_yticklabels(yticklabels);
-            break
         return axes_LTP, axes_LTD
 
     def plot_cell(self):
