@@ -374,6 +374,40 @@ class Neuron(object):
            self.esyn.append(syn)
            return syn
 
+        elif syntype in ['adaptive_meta_hetero_NMDA']:
+           syn.obj = h.adaptive_meta_hetero_NMDA(sec(pos))
+
+           syn.obj.mg = p.Mg
+           syn.obj.eta = p.eta
+           syn.obj.alpha = p.alpha
+           syn.obj.gmax = p.gmaxNMDA_spillover
+           syn.obj.Erev = p.erev_NMDA
+           syn.obj.Alpha = p.nmda_alpha
+           syn.obj.Beta = p.nmda_beta
+           syn.obj.Cdur = p.Cdur
+           syn.obj.nmda_ca_fraction = p.nmda_ca_fraction
+           syn.obj.Cmax = p.nmda_Tmax
+
+           syn.obj.w0 = p.weight
+           syn.obj.wmax = p.weight*p.LTP_factor
+           syn.obj.wmin = p.weight*p.LTD_factor
+           syn.obj.learning_rate_w_LTP = p.learning_rate_w_LTP
+           syn.obj.learning_rate_w_LTD = p.learning_rate_w_LTD
+           syn.obj.learning_rate_thresh_LTP = p.learning_rate_thresh_LTP
+           syn.obj.learning_rate_thresh_LTD = p.learning_rate_thresh_LTD
+           syn.obj.hetero_rate_thresh_LTP = p.hetero_rate_thresh_LTP
+           syn.obj.hetero_rate_thresh_LTD = p.hetero_rate_thresh_LTD
+           syn.obj.thresh_LTD_0 = p.thresh_LTD
+           syn.obj.thresh_LTP_0 = p.thresh_LTP
+           syn.obj.thresh_LTD_min = p.thresh_LTD_min
+           syn.obj.thresh_LTP_min = p.thresh_LTP_min
+           syn.obj.hthresh_LTP = p.hthresh_LTP
+
+           syn.obj.LTD_thresh_factor = p.LTD_thresh_factor
+
+           self.esyn.append(syn)
+           return syn
+
         elif syntype in ['adaptive_ahom_NMDA']:
            syn.obj = h.adaptive_ahom_NMDA(sec(pos))
 

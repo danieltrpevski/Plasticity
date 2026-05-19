@@ -130,7 +130,8 @@ class Experiment(object):
                              'adaptive_cshom_NMDA','adaptive_glutamate_cshom', 'adaptive_my_shom_NMDA',
                              'adaptive_sAMPA', 'adaptive_sNMDA', 'adaptive_sglutamate',
                              'NMDAe', 'adaptive_zahra_NMDA', 'adaptive_zahra_AMPA',
-                             'NMDAe_ica_nmda', 'adaptive_hom_AMPA_fNMDA', 'adaptive2_inhexp2syn']:
+                             'NMDAe_ica_nmda', 'adaptive_hom_AMPA_fNMDA', 'adaptive2_inhexp2syn',
+                             'adaptive_meta_hetero_NMDA']:
                 syn.nc[-1].weight[0] = 1.0
             else:
                 print("Synapse model not available in connect_input_genetrator().")

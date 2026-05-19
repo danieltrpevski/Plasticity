@@ -419,7 +419,8 @@ class Plasticity_Experiment(e.Experiment):
                             'xor_spillover', 'xor_sspillover', 'xor_hom_spillover', 'xor_hom_spillover_fNMDA',
                             'xor_spillover_test', 'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                             'xor_shom_spillover','xor_cshom_spillover', 'xor_zahra_spillover',
-                            'xor_ahom_spillover', 'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp']:
+                            'xor_ahom_spillover', 'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp',
+                            'mod_hetero_nfbp']:
 
             # self.ica = []
             if type(dend_record_list) == list:
@@ -464,6 +465,8 @@ class Plasticity_Experiment(e.Experiment):
                 synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
             elif self.exptype in ['fbp'] and p.connectivity == 'random':
                 synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
+            elif self.exptype in ['mod_hetero_nfbp']:
+                synlist = self.get_synapse_list('adaptive_meta_hetero_NMDA', clustered_flag = True)
             elif self.exptype in ['xor_addhom_spillover']:
                 synlist = self.get_synapse_list('adaptive_addhom_NMDA', clustered_flag = True)
             elif self.exptype == 'xor_ahom_spillover':
@@ -513,7 +516,8 @@ class Plasticity_Experiment(e.Experiment):
                                 'xor_cshom_spillover', 'xor_sspillover', 'xor_zahra_spillover',
                                 'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                                 'xor_hom_spillover_fNMDA', 'xor_ahom_spillover',
-                                'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp']:
+                                'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp',
+                                'mod_hetero_nfbp']:
                 self.cali_dend = []
                 self.cai_dend = []
                 self.cai_nmda_dend = []
@@ -547,7 +551,7 @@ class Plasticity_Experiment(e.Experiment):
                                 self.mlist[-1].append(h.Vector())
                                 self.mlist[-1][-1].record(i._ref_m, record_step)
 
-            if self.exptype == 'mod_nfbp':
+            if self.exptype in ['mod_nfbp', 'mod_hetero_nfbp']:
                 self.lthresh_LTP_init = []
                 self.thresh_LTD_init = []
                 for s in synlist:
@@ -741,7 +745,8 @@ class Plasticity_Experiment(e.Experiment):
             if syn.type in ['adaptive_NMDA', 'adaptive_hom_NMDA', 'adaptive_hom_NMDA2',
             'adaptive_NMDAe', 'adaptive_shom_NMDA', 'adaptive_cshom_NMDA', 'adaptive_sNMDA',
             'adaptive_zahra_NMDA', 'adaptive_shom_NMDA_stp', 'adaptive_my_shom_NMDA',
-             'adaptive_NMDAe', 'adaptive_ahom_NMDA', 'adaptive_addhom_NMDA'] :
+             'adaptive_NMDAe', 'adaptive_ahom_NMDA', 'adaptive_addhom_NMDA',
+             'adaptive_meta_hetero_NMDA'] :
                 self.w_nmda.append(h.Vector())
                 self.w_nmda[-1].record(syn.obj._ref_weight, p.record_step_thresh)
                 syn.ref_var_nmda = self.w_nmda[-1]
@@ -749,7 +754,7 @@ class Plasticity_Experiment(e.Experiment):
                 self.w_ampa.append(h.Vector())
                 self.w_ampa[-1].record(syn.obj._ref_weight, p.record_step_thresh)
                 syn.ref_var_ampa = self.w_ampa[-1]
-            if syn.type in ['adaptive_hom_NMDA'] and syn.clustered_flag == True:
+            if syn.type in ['adaptive_hom_NMDA', 'adaptive_meta_hetero_NMDA'] and syn.clustered_flag == True:
                 self.lthresh_LTP.append(h.Vector())
                 self.lthresh_LTP[-1].record(syn.obj._ref_thresh_LTP, p.record_step_thresh)
                 syn.ref_var_lthresh_LTP = self.lthresh_LTP[-1]
@@ -1033,7 +1038,8 @@ class Plasticity_Experiment(e.Experiment):
                               'xor_spillover', 'xor_sspillover', 'xor_hom_spillover', 'xor_spillover_test',
                               'xor_cshom_spillover', 'xor_zahra_spillover','xor_shom_my_spillover',
                               'xor_shom_my_spillover_stp', 'nfbp_inh', 'pattern', 'xor_hom_spillover_fNMDA',
-                              'xor_ahom_spillover', 'xor_addhom_spillover', 'fbp', 'mod_nfbp']:
+                              'xor_ahom_spillover', 'xor_addhom_spillover', 'fbp', 'mod_nfbp',
+                              'mod_hetero_nfbp']:
 
 
             #------------------------------------------------#
@@ -1055,7 +1061,7 @@ class Plasticity_Experiment(e.Experiment):
                                 'xor_hom_spillover', 'xor_shom_spillover', 'xor_cshom_spillover',
                                 'xor_zahra_spillover', 'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                                 'xor_hom_spillover_fNMDA', 'xor_ahom_spillover', 'nfbp_inh',
-                                'xor_addhom_spillover', 'fbp', 'mod_nfbp']:
+                                'xor_addhom_spillover', 'fbp', 'mod_nfbp', 'mod_hetero_nfbp']:
                 if self.exptype == 'xor':
                     self.synlist = self.get_synapse_list('adaptive_glutamate2', clustered_flag = True)
                 elif self.exptype == 'xor_hom':
@@ -1068,6 +1074,9 @@ class Plasticity_Experiment(e.Experiment):
                     self.synlist_agh = self.get_synapse_list('adaptive_sNMDA', clustered_flag = False)
                 elif self.exptype in ['xor_hom_spillover', 'fbp', 'mod_nfbp']:
                     self.synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+                    self.synlist_agh = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
+                elif self.exptype in ['mod_hetero_nfbp']:
+                    self.synlist = self.get_synapse_list('adaptive_meta_hetero_NMDA', clustered_flag = True)
                     self.synlist_agh = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
                 elif self.exptype == 'xor_addhom_spillover':
                     self.synlist = self.get_synapse_list('adaptive_addhom_NMDA', clustered_flag = True)
@@ -1122,13 +1131,9 @@ class Plasticity_Experiment(e.Experiment):
                 # syn_figs_cali, syn_axes_cali = self.plot_helper('ica')
                 # syn_figs_cali, syn_axes_cali = self.plot_helper('cao')
 #                syn_figs_ca_nmda_cali, syn_axes_ca_nmda_cali = self.plot_helper('ca_nmda + cali'); sns.despine()
-                if self.exptype in ['xor_hom_spillover',
-                                    'xor_hom_spillover_fNMDA',
-                                    'xor_ahom_spillover',
-                                    'xor_addhom_spillover',
-                                    'nfbp_inh',
-                                    'fbp',
-                                    'mod_nfbp']:
+                if self.exptype in ['xor_hom_spillover', 'xor_hom_spillover_fNMDA',
+                                    'xor_ahom_spillover', 'xor_addhom_spillover',
+                                    'nfbp_inh', 'fbp', 'mod_nfbp', 'mod_hetero_nfbp']:
                     syn_figs_thp, syn_axes_thp = self.plot_helper('lthresh_LTP');
                     syn_figs_thd, syn_axes_thd = self.plot_helper('thresh_LTD');
                 if self.exptype in ['xor_shom_spillover', 'xor_cshom_spillover',
@@ -1591,13 +1596,17 @@ class Plasticity_Experiment(e.Experiment):
         elif self.exptype in ['xor_hom_spillover', 'xor_shom_spillover', 'xor_cshom_spillover',
                               'xor_zahra_spillover', 'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                               'xor_hom_spillover_fNMDA', 'xor_ahom_spillover', 'xor_addhom_spillover',
-                              'fbp', 'mod_nfbp']:
+                              'fbp', 'mod_nfbp', 'mod_hetero_nfbp']:
             if self.exptype in ['xor_hom_spillover', 'fbp', 'mod_nfbp']:
                 self.synlist_nc = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = clustered_flag)
                 self.synlist_ne = self.get_synapse_list('adaptive_NMDAe', clustered_flag = clustered_flag)
                 self.synlist = self.synlist_nc
     #            self.synlist_nc = [s for s in self.synlist_n if 'spine' in s.sec.name()]
     #            self.synlist_ne = [s for s in self.synlist_n if not('spine' in s.sec.name())]
+            elif self.exptype in ['mod_hetero_nfbp']:
+                self.synlist_nc = self.get_synapse_list('adaptive_meta_hetero_NMDA', clustered_flag = clustered_flag)
+                self.synlist_ne = self.get_synapse_list('adaptive_NMDAe', clustered_flag = clustered_flag)
+                self.synlist = self.synlist_nc
             elif self.exptype == 'xor_ahom_spillover':
                 self.synlist = self.get_synapse_list('adaptive_hom_AMPA', clustered_flag = clustered_flag)
                 self.synlist_nc = self.get_synapse_list('adaptive_ahom_NMDA', clustered_flag = clustered_flag)
@@ -1669,7 +1678,8 @@ class Plasticity_Experiment(e.Experiment):
                             'xor_cshom_spillover','xor_sspillover', 'xor_zahra_spillover',
                             'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                             'xor_hom_spillover_fNMDA', 'xor_ahom_spillover',
-                            'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp']:
+                            'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp',
+                            'mod_hetero_nfbp']:
             syn_strength = p.weight
         else:
             if plot_what == 'wampa':
@@ -1902,7 +1912,7 @@ class Plasticity_Experiment(e.Experiment):
             axess[-1].set_title("Dendrite %d" % r[i-1])
             if plot_what in ['lthresh_LTP']:
                 axess[-1].plot(self.tout, 1000*p.hthresh_LTP*np.ones(self.tout.shape), color = 'gray', linestyle = '--')
-                if self.exptype in ['xor_hom_spillover', 'mod_nfbp']:
+                if self.exptype in ['xor_hom_spillover', 'mod_nfbp', 'mod_hetero_nfbp']:
                     axess[-2].plot(self.tout, 1000*p.hthresh_LTP*np.ones(self.tout.shape), color = 'gray', linestyle = '--')
                 # axess[-2].plot(tinds, 1000*p.hthresh_LTP*np.ones(len(tinds),), color = 'gray', linestyle = '--')
             if plot_what in ['thresh_LTD']:
@@ -1970,7 +1980,8 @@ class Plasticity_Experiment(e.Experiment):
         if type(self.dendstatobj) == type(dsd.DendStat()):
             if self.exptype in ['xor', 'xor_hom', 'xor_spillover', 'xor_hom_spillover',
                                 'xor_shom_spillover', 'xor_cshom_spillover', 'xor_sspillover',
-                                'xor_ahom_spillover', 'xor_addhom_spillover', 'mod_nfbp']:
+                                'xor_ahom_spillover', 'xor_addhom_spillover', 'mod_nfbp',
+                                'mod_hetero_nfbp']:
                 if self.exptype == 'xor':
                     self.synlist = self.get_synapse_list('adaptive_glutamate2', clustered_flag = True)
 
@@ -2016,6 +2027,20 @@ class Plasticity_Experiment(e.Experiment):
 #                            self.synlist_ne.append(syn)
                     self.synlist = self.synlist_a
 #                self.synlist.sort(key = lambda f: (f.sec.name(), f.source))
+                elif self.exptype in ['mod_hetero_nfbp']:
+                    self.synlist_a = self.get_synapse_list('adaptive_hom_AMPA', clustered_flag = True)
+                    synlist_nmda = self.get_synapse_list('adaptive_meta_hetero_NMDA', clustered_flag = True)
+                    self.synlist_n = synlist_nmda
+                    self.synlist_ne = self.get_synapse_list('adaptive_NMDAe', clustered_flag = True)
+                    self.synlist_agh = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
+
+#                    for syn in synlist_nmda:
+#                        if 'spine' in syn.sec.name():
+#                            self.synlist_n.append(syn)
+#                        elif not ('spine' in syn.sec.name()):
+#                            self.synlist_ne.append(syn)
+                    self.synlist = self.synlist_a
+
                 elif self.exptype == 'xor_addhom_spillover':
                     self.synlist_a = self.get_synapse_list('adaptive_hom_AMPA', clustered_flag = True)
                     synlist_nmda = self.get_synapse_list('adaptive_addhom_NMDA', clustered_flag = True)
@@ -2084,7 +2109,7 @@ class Plasticity_Experiment(e.Experiment):
                         syns_nmda.append(self.synlist[i].ref_var_nmda.to_python()[-1])
                     elif self.exptype in ['xor_spillover', 'xor_hom_spillover','xor_shom_spillover',
                                           'xor_cshom_spillover', 'xor_sspillover', 'xor_ahom_spillover',
-                                          'xor_addhom_spillover', 'fbp', 'mod_nfbp']:
+                                          'xor_addhom_spillover', 'fbp', 'mod_nfbp', 'mod_hetero_nfbp']:
 #                        syns_ampa.append(self.synlist_a[i].ref_var_ampa.to_python()[-1])
                         syns_nmda.append(self.synlist_n[i].ref_var_nmda.to_python()[-1])
 #                        syns_nmda_e.append(self.synlist_ne[i].ref_var_nmda.to_python()[-1])
@@ -2112,7 +2137,7 @@ class Plasticity_Experiment(e.Experiment):
 
                 if self.exptype in ['xor_shom_spillover', 'xor_cshom_spillover', 'xor_hom_spillover',
                                     'xor_hom_spillover_fNMDA', 'xor_ahom_spillover', 'xor_addhom_spillover',
-                                    'fbp', 'mod_nfbp']:
+                                    'fbp', 'mod_nfbp', 'mod_hetero_nfbp']:
                     e, verror, window_error = self.error(p.window_error)
                     self.dendstatobj.verror = verror
                     self.dendstatobj.window_error = window_error
@@ -2155,7 +2180,8 @@ class Plasticity_Experiment(e.Experiment):
                             'xor_cshom_spillover', 'xor_sspillover', 'xor_zahra_spillover',
                             'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                             'xor_hom_spillover_fNMDA', 'xor_ahom_spillover',
-                            'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp']:
+                            'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp',
+                            'mod_hetero_nfbp']:
             self.insert_synapses('MSN')
             self.create_dopamine()
             ts = self.create_training_set(p.training_set_size)
@@ -2190,7 +2216,8 @@ class Plasticity_Experiment(e.Experiment):
                                 'xor_cshom_spillover', 'xor_sspillover', 'xor_zahra_spillover',
                                 'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                                 'xor_hom_spillover_fNMDA', 'xor_ahom_spillover',
-                                'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp']:
+                                'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp',
+                                'mod_hetero_nfbp']:
                 fih1 = h.FInitializeHandler((self.seti_dopamine_release, self.reward_times))
 
 #                fih2 = h.FInitializeHandler((self.seti_xor_input_times, self.xor_input_times))
@@ -2200,7 +2227,7 @@ class Plasticity_Experiment(e.Experiment):
                                     'xor_sspillover', 'xor_zahra_spillover', 'xor_shom_my_spillover',
                                     'xor_shom_my_spillover_stp', 'xor_hom_spillover_fNMDA',
                                     'xor_ahom_spillover', 'xor_addhom_spillover', 'nfbp_inh', 'fbp',
-                                    'mod_nfbp']:
+                                    'mod_nfbp', 'mod_hetero_nfbp']:
                     fih2 = h.FInitializeHandler((self.seti_stimulus_indicators, self.xor_input_times))
                 if self.exptype in ['xor_hom_spillover',
                                     'xor_hom_spillover_fNMDA',
@@ -2209,7 +2236,8 @@ class Plasticity_Experiment(e.Experiment):
                                     'xor_ahom_spillover',
                                     'xor_addhom_spillover',
                                     'nfbp_inh', 'fbp',
-                                    'mod_nfbp']:
+                                    'mod_nfbp',
+                                    'mod_hetero_nfbp']:
                     fih5 = h.FInitializeHandler((self.set_exglu_weights))
                 # if self.exptype in ['mod_nfbp']:
                 #     fih6 = h.FInitializeHandler((self.set_thresholds))
@@ -2219,7 +2247,7 @@ class Plasticity_Experiment(e.Experiment):
 
             # h.run()
             h.init()
-            if self.exptype in ['mod_nfbp']:
+            if self.exptype in ['mod_nfbp', 'mod_hetero_nfbp']:
                 self.set_learning_rates(False)
                 h.continuerun(p.first_training_input_start + p.num_different_stimuli*p.session_length)
                 self.set_learning_rates(True)
@@ -2281,7 +2309,7 @@ class Plasticity_Experiment(e.Experiment):
         times = (np.unique(times)).tolist()
         for i,t in enumerate(times):
             h.cvode.event(t, (self.seti_stimulus_flag, 1))
-            if self.exptype == 'mod_nfbp' and i < p.num_modulated_patterns:
+            if self.exptype in ['mod_nfbp', 'mod_hetero_nfbp'] and i < p.num_modulated_patterns:
                 h.cvode.event(t, (self.modulate_weights_and_channels, 1))
 
     def seti_stimulus_flag(self, flag):
@@ -2297,7 +2325,8 @@ class Plasticity_Experiment(e.Experiment):
                                 'xor_addhom_spillover',
                                 'nfbp_inh',
                                 'fbp',
-                                'mod_nfbp']:
+                                'mod_nfbp',
+                                'mod_hetero_nfbp']:
                 self.set_exglu_weights()
                 self.reset_exglu()
                 if p.with_diffusion:
@@ -2306,7 +2335,11 @@ class Plasticity_Experiment(e.Experiment):
                 self.reset_caint()
 
     def modulate_weights_and_channels(self, flag):
-        synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+        if self.exptype == 'mod_nfbp':
+            syntype = 'adaptive_hom_NMDA'
+        elif self.exptype == 'mod_hetero_nfbp':
+            syntype = 'adaptive_meta_hetero_NMDA'
+        synlist = self.get_synapse_list(syntype, clustered_flag = True)
 
         if flag:
             for s in synlist:
@@ -2346,7 +2379,11 @@ class Plasticity_Experiment(e.Experiment):
     def set_thresholds(self):
         max_LTP = []
         max_LTD = []
-        synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+        if self.exptype == 'mod_nfbp':
+            syntype = 'adaptive_hom_NMDA'
+        elif self.exptype == 'mod_hetero_nfbp':
+            syntype = 'adaptive_meta_hetero_NMDA'
+        synlist = self.get_synapse_list(syntype, clustered_flag = True)
         # for s in synlist:
         #     dend = self.extract_number_from_string(s.sec.name())
         #     s.obj.thresh_LTP = p.threshs_LTP[p.independent_dends.index(dend)]
@@ -2428,6 +2465,11 @@ class Plasticity_Experiment(e.Experiment):
 
         elif self.exptype in ['xor_hom_spillover', 'mod_nfbp']:
             synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+            for s, exglu in zip(synlist, self.exnc):
+                exglu.weight[0] = s.obj.weight*p.exglu_norm_factor
+
+        elif self.exptype in ['mod_hetero_nfbp']:
+            synlist = self.get_synapse_list('adaptive_meta_hetero_NMDA', clustered_flag = True)
             for s, exglu in zip(synlist, self.exnc):
                 exglu.weight[0] = s.obj.weight*p.exglu_norm_factor
 
@@ -2679,7 +2721,7 @@ class Plasticity_Experiment(e.Experiment):
                             'xor_cshom_spillover', 'xor_zahra_spillover', 'xor_shom_my_spillover',
                             'xor_shom_my_spillover_stp', 'xor_ahom_spillover',
                             'xor_hom_spillover_fNMDA', 'xor_addhom_spillover', 'nfbp_inh',
-                            'mod_nfbp']:
+                            'mod_nfbp', 'mod_hetero_nfbp']:
             if not p.random_training_sequence:
                 for i in range (0,p.training_set_size_per_group):
                     training_set.append('rs')
@@ -2792,6 +2834,30 @@ class Plasticity_Experiment(e.Experiment):
                         if p.rnd_exptype == 'spillover':
                             h.setpointer(syn2.obj._ref_weight, 'weight', syn3.obj)
 
+                    elif self.exptype in ['mod_hetero_nfbp']:
+                        syn1 = self.cell.insert_synapse('adaptive_hom_AMPA', sec, pos, add_spine = 1)
+                        self.connect_input_generator(syn1, 'adaptive_hom_AMPA', gen)
+                        self.cell.spines[-1].syn_on = 0
+                        syn2 = self.cell.insert_synapse('adaptive_meta_hetero_NMDA', sec, pos, add_spine = 0, on_spine = 1)
+                        self.connect_input_generator(syn2, 'adaptive_meta_hetero_NMDA', gen)
+
+                        if p.rnd_exptype == 'spillover':
+                            sp_ind = bisect.bisect_left(self.spillover_indices[dist_dends.index(dend)], pos)
+                            self.stat.append([dist_dends.index(dend), sp_ind])
+                            syn3 = self.cell.insert_synapse('adaptive_NMDAe', sec, pos,
+                                                                       add_spine = 0, on_spine = 0)
+                            self.connect_input_generator(self.exglu_list[dist_dends.index(dend)][sp_ind], 't_exglu', gen)
+                            self.connect_input_generator(syn3, 's_exglu', self.exglu_list[dist_dends.index(dend)][sp_ind], delay = p.delay_exnmda)
+                            self.num_syns_in_segment[dist_dends.index(dend)][sp_ind] +=1
+                        h.setpointer(h._ref_dopamine, 'dopamine', syn2.obj)
+                        h.setpointer(h._ref_stimulus_flag, 'stimulus_flag', syn2.obj)
+                        h.setpointer(syn2.obj._ref_weight, 'weight', syn1.obj)
+
+                        if p.random_initial_weights:
+                            syn2.obj.w0 = rnd.uniform(p.start_weight, p.end_weight)
+                        if p.rnd_exptype == 'spillover':
+                            h.setpointer(syn2.obj._ref_weight, 'weight', syn3.obj)
+
                     elif self.exptype == 'xor_ahom_spillover':
                         syn1 = self.cell.insert_synapse('adaptive_hom_AMPA', sec, pos, add_spine = 1)
                         self.connect_input_generator(syn1, 'adaptive_hom_AMPA', gen)
@@ -2847,7 +2913,7 @@ class Plasticity_Experiment(e.Experiment):
                     if self.exptype in ['xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                                         'xor_hom_spillover', 'xor_hom_spillover_fNMDA',
                                         'xor_ahom_spillover', 'xor_addhom_spillover',
-                                        'nfbp_inh', 'fbp', 'mod_nfbp']:
+                                        'nfbp_inh', 'fbp', 'mod_nfbp', 'mod_hetero_nfbp']:
                         self.exglusec.append(h.Section(name = 'exglusec%d' % len(self.exglusec)))
                         self.exglu.append(h.IntFire1(self.exglusec[-1](0.5)))
                         self.exglu[-1].tau = p.exglu_tau
@@ -2927,6 +2993,24 @@ class Plasticity_Experiment(e.Experiment):
                                 self.cell.spines[-1].syn_on = 0
                                 syn2 = self.cell.insert_synapse('adaptive_hom_NMDA', self.cell.dendlist[dend], pos, add_spine = 0, on_spine = 1)
                                 self.connect_input_generator(syn2, 'adaptive_hom_NMDA', gen)
+                                syn3 = self.cell.insert_synapse('adaptive_NMDAe', self.cell.dendlist[dend], pos,
+                                                                           add_spine = 0, on_spine = 0)
+                                self.connect_input_generator(self.exglu[-1], 't_exglu', gen)
+                                self.connect_input_generator(syn3, 's_exglu', self.exglu[-1], delay = p.delay_exnmda)
+
+                                h.setpointer(h._ref_dopamine, 'dopamine', syn2.obj)
+                                h.setpointer(h._ref_stimulus_flag, 'stimulus_flag', syn2.obj)
+                                h.setpointer(syn2.obj._ref_weight, 'weight', syn3.obj)
+                                h.setpointer(syn2.obj._ref_weight, 'weight', syn1.obj)
+                                if p.random_initial_weights:
+                                    syn2.obj.w0 = rnd.uniform(p.start_weight, p.end_weight)
+
+                            elif self.exptype in ['mod_hetero_nfbp']:
+                                syn1 = self.cell.insert_synapse('adaptive_hom_AMPA', self.cell.dendlist[dend], pos, add_spine = 1)
+                                self.connect_input_generator(syn1, 'adaptive_hom_AMPA', gen)
+                                self.cell.spines[-1].syn_on = 0
+                                syn2 = self.cell.insert_synapse('adaptive_meta_hetero_NMDA', self.cell.dendlist[dend], pos, add_spine = 0, on_spine = 1)
+                                self.connect_input_generator(syn2, 'adaptive_meta_hetero_NMDA', gen)
                                 syn3 = self.cell.insert_synapse('adaptive_NMDAe', self.cell.dendlist[dend], pos,
                                                                            add_spine = 0, on_spine = 0)
                                 self.connect_input_generator(self.exglu[-1], 't_exglu', gen)
@@ -3100,7 +3184,8 @@ class Plasticity_Experiment(e.Experiment):
                                                      'xor_spillover_test','xor_shom_spillover',
                                                      'xor_cshom_spillover', 'xor_sspillover','xor_zahra_spillover',
                                                      'xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
-                                                     'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp']):
+                                                     'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp',
+                                                     'mod_hetero_nfbp']):
 
                                 syn.source = group
                                 syn.clustered_flag = True
@@ -3165,7 +3250,8 @@ class Plasticity_Experiment(e.Experiment):
                             'xor_cshom_spillover', 'xor_sspillover', 'xor_spillover_test',
                             'xor_zahra_spillover','xor_shom_my_spillover', 'xor_shom_my_spillover_stp',
                             'xor_hom_spillover_fNMDA', 'xor_ahom_spillover',
-                            'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp']:
+                            'xor_addhom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp',
+                            'mod_hetero_nfbp']:
 
             if p.adaptive_distributed_inputs:
                 if self.exptype in  ['xor', 'xor_spillover']:
@@ -3216,7 +3302,8 @@ class Plasticity_Experiment(e.Experiment):
                         syn2.source = 'distributed'
                     elif self.exptype in ['xor_shom_spillover', 'xor_hom_spillover',
                                           'xor_shom_my_spillover', 'xor_ahom_spillover',
-                                          'xor_addhom_spillover','nfbp_inh', 'fbp','mod_nfbp']:
+                                          'xor_addhom_spillover','nfbp_inh', 'fbp','mod_nfbp',
+                                          'mod_hetero_nfbp']:
 
                         if self.exptype == 'xor_shom_spillover':
                             syntype = 'adaptive_shom_NMDA'
@@ -3225,6 +3312,11 @@ class Plasticity_Experiment(e.Experiment):
 
                         elif self.exptype in ['xor_hom_spillover', 'nfbp_inh', 'fbp', 'mod_nfbp']:
                             syntype = 'adaptive_hom_NMDA'
+                            syn1 = self.cell.insert_synapse('adaptive_hom_AMPA', self.cell.dendlist[dend], pos, add_spine = 1, on_spine = 0)
+                            self.connect_input_generator(syn1, 'adaptive_hom_AMPA', gen)
+
+                        elif self.exptype in ['mod_hetero_nfbp']:
+                            syntype = 'adaptive_meta_hetero_NMDA'
                             syn1 = self.cell.insert_synapse('adaptive_hom_AMPA', self.cell.dendlist[dend], pos, add_spine = 1, on_spine = 0)
                             self.connect_input_generator(syn1, 'adaptive_hom_AMPA', gen)
 
@@ -3342,7 +3434,7 @@ class Plasticity_Experiment(e.Experiment):
                             h.setpointer(h._ref_stimulus_flag, 'stimulus_flag', syn.obj)
                             if self.exptype in ['xor_hom_spillover', 'xor_hom_spillover_fNMDA',
                                                 'xor_ahom_spillover', 'xor_addhom_spillover', 'fbp',
-                                                'mod_nfbp']:
+                                                'mod_nfbp', 'mod_hetero_nfbp']:
                                 syn.obj.thresh_LTP_0 = p.thresh_LTP
                                 syn.obj.thresh_LTD_0 = p.thresh_LTD
                                 if syn.type in ['adaptive_glutamate_hom', 'adaptive_glutamate_hom2']:
