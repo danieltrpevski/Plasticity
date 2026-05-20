@@ -754,7 +754,8 @@ class Plasticity_Experiment(e.Experiment):
                 self.w_ampa.append(h.Vector())
                 self.w_ampa[-1].record(syn.obj._ref_weight, p.record_step_thresh)
                 syn.ref_var_ampa = self.w_ampa[-1]
-            if syn.type in ['adaptive_hom_NMDA', 'adaptive_meta_hetero_NMDA'] and syn.clustered_flag == True:
+            if (syn.type in ['adaptive_hom_NMDA', 'adaptive_meta_hetero_NMDA']
+                and (syn.clustered_flag == True or self.exptype == 'fbp' and p.connectivity == 'random')):
                 self.lthresh_LTP.append(h.Vector())
                 self.lthresh_LTP[-1].record(syn.obj._ref_thresh_LTP, p.record_step_thresh)
                 syn.ref_var_lthresh_LTP = self.lthresh_LTP[-1]
@@ -1481,7 +1482,7 @@ class Plasticity_Experiment(e.Experiment):
                         ax_cai_agh[-1].plot(np.asarray(self.tout)*0.001, cai_agh[i], color = color)
                         # ax_cai_nmda_agh[-1].plot(self.tout, self.cai_nmda_agh[i])
                         ax_lthresh_LTP_agh[-1].plot(np.asarray(self.tthresh)*0.001, np.asarray(synlist_agh[i].ref_var_lthresh_LTP.to_python())*1000, color = color)
-                        ax_lthresh_LTD_agh[-1].plot(np.asarray(self.tthresh)*0.001, synlist_agh[i].ref_var_lthresh_LTD.to_python(), color = color)
+                        ax_lthresh_LTD_agh[-1].plot(np.asarray(self.tthresh)*0.001, np.asarray(synlist_agh[i].ref_var_lthresh_LTD.to_python())*1000, color = color)
                         ax_v_agh[-1].plot(np.asarray(self.tv)*0.001, v_agh[i], color = color)
                         # ax_kernel_agh[-1].plot(self.tout, self.kernel_agh[i])
                         # ax_kernel_LTD_agh[-1].plot(self.tout, self.kernel_LTD_agh[i])
