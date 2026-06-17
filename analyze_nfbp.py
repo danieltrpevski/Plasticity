@@ -36,7 +36,7 @@ for element in itertools.product(b,a):
 print(result)
 
 print("Loading data for analysis...")
-filename = './results/metaplasticity/nfbp.dat'
+filename = './results/metaplasticity/nfbp_wmax_1_4.dat'
 with open(filename, 'r', encoding = 'utf-8') as f:
     fload  = json.load(f)
     res_dict = json.loads(fload)
