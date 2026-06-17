@@ -7,7 +7,7 @@ Created on Wed Jul 17 17:53:21 2019
 
 from neuron import h
 import d1msn as msn
-import reversal_learning as rl
+import plasticity_experiment as pe
 import parameters as p
 import pickle
 import dendstat as ds
@@ -44,7 +44,7 @@ dendstatobj.dends = p.input_dends
 dendstatobj.dend_inputs = [['r', 's', 'y'], []]
 dendstatobj.dend_syns = [[10, 10, 10], []]
 
-ex = rl.Reversal_Learning('fbp', cell, dendstatobj = dendstatobj)
+ex = pe.Plasticity_Experiment('fbp', cell, dendstatobj = dendstatobj)
 ex.set_up_experiment()
 ex.set_up_recording(p.input_dends)
 ex.simulate()
