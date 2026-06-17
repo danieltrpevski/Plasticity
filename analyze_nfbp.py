@@ -36,7 +36,7 @@ for element in itertools.product(b,a):
 print(result)
 
 print("Loading data for analysis...")
-filename = './results/metaplasticity/nfbp_wmax_1_4.dat'
+filename = './results/metaplasticity/nfbp_eta_10.dat'
 with open(filename, 'r', encoding = 'utf-8') as f:
     fload  = json.load(f)
     res_dict = json.loads(fload)
@@ -48,14 +48,13 @@ weights = res_dict['weights']
 rewards_delivered = res_dict['rewards_delivered']
 error = res_dict['error']
 tw = res_dict['tw']
-# t = res_dict['t']
 trials = res_dict['trials']
 tw = np.asarray(tw)*1e-3
 
 indices_four = [3, 7, 11, 12, 13, 14, 18, 22, 26, 27, 28, 29, 30]
 all_indices = (np.arange(0, 31, 1)).tolist()
 indices_three = list(set(all_indices) - set(indices_four))
-num_stimuli = 600
+num_stimuli = len(rewards_delivered[0])
 
 er = np.reshape(error, (len(result), trials, int(num_stimuli/20))) #int(640/12)
 e1 = er[indices_three]
@@ -69,7 +68,7 @@ me2 = np.mean(e2, axis = (0,1)); se2 = np.std(e2, axis = (0,1))
 fig = plt.figure(figsize = (p.fig_width, p.fig_height))
 ax = fig.add_subplot(111)
 # xval = np.arange(12, 640+12, 12)
-xval = np.arange(20, num_stimuli + 20, 20)
+xval = np.arange(20, num_stimuli , 20)
 
 pal = sns.color_palette("colorblind"); #color_inh = pal[3]; color_exc = pal[-2]
 ax.plot(xval[0:xval.size], np.ones((xval.size,))*87.5, color = 'gray', linewidth = 2.0, linestyle = '--')
