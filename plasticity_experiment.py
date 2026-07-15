@@ -460,7 +460,11 @@ class Plasticity_Experiment(e.Experiment):
             elif self.exptype == 'xor_sspillover':
                 synlist = self.get_synapse_list('adaptive_sAMPA', clustered_flag = True)
             elif self.exptype in ['xor_hom_spillover', 'nfbp_inh', 'mod_nfbp']:
-                synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
+                if p.connectivity == 'clustered':
+                    clustered_flag = True
+                elif p.connectivity == 'random':
+                    clustered_flag = False
+                synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = clustered_flag)
             elif self.exptype in ['fbp'] and p.connectivity == 'clustered':
                 synlist = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
             elif self.exptype in ['fbp'] and p.connectivity == 'random':
@@ -609,7 +613,7 @@ class Plasticity_Experiment(e.Experiment):
                                 self.cai_nmda_spine.append(h.Vector())
                                 self.cai_nmda_spine[-1].record(spine.head(0.5)._ref_ca_nmdai, record_step)
 
-                            print("Length of record_spinelist = ", len(self.record_spinelist), "len(self.vspine) = ", len(self.vspine))
+                        print("Length of record_spinelist = ", len(self.record_spinelist), "len(self.vspine) = ", len(self.vspine))
 
             elif self.exptype == 'record_ca_dist':
                 self.record_spinelist = self.cell.spines
@@ -755,7 +759,7 @@ class Plasticity_Experiment(e.Experiment):
                 self.w_ampa[-1].record(syn.obj._ref_weight, p.record_step_thresh)
                 syn.ref_var_ampa = self.w_ampa[-1]
             if (syn.type in ['adaptive_hom_NMDA', 'adaptive_meta_hetero_NMDA']
-                and (syn.clustered_flag == True or self.exptype == 'fbp' and p.connectivity == 'random')):
+                and (syn.clustered_flag == True or (self.exptype in ['fbp','xor_hom_spillover'] and p.connectivity == 'random'))):
                 self.lthresh_LTP.append(h.Vector())
                 self.lthresh_LTP[-1].record(syn.obj._ref_thresh_LTP, p.record_step_thresh)
                 syn.ref_var_lthresh_LTP = self.lthresh_LTP[-1]
@@ -943,6 +947,24 @@ class Plasticity_Experiment(e.Experiment):
             axes_ba[-1].set_ylabel('v$_{\mathrm{soma}}$')
             axes_ba[-1].set_yticks([-80, 20])
             axes_ba[-1].set_xlabel('t (ms)')
+        elif self.exptype == 'xor_hom_spillover' and p.connectivity == 'random':
+            fig, axes = plt.subplots(1, 1, figsize = (p.fig_width, p.fig_height))
+            fig_ba, axes_ba = plt.subplots(1, 1, figsize = (p.fig_width, p.fig_height))
+
+            multiplier = int(p.session_length*p.nrn_dots_per_1ms)
+            start = int(p.first_training_input_start*p.nrn_dots_per_1ms)
+            end = int(p.num_different_stimuli*multiplier+p.first_training_input_start*p.nrn_dots_per_1ms)
+
+            axes.plot(self.tv, self.vs)
+            axes.set_ylabel('v$_{\mathrm{soma}}$ (mV)')
+            axes.set_yticks([-80, 20])
+            axes.set_xlabel('t (ms)')
+
+            axes_ba.plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[start:end], color = 'gray')
+            axes_ba.plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
+            axes_ba.set_ylabel('v$_{\mathrm{soma}}$ (mV)')
+            axes_ba.set_yticks([-80, 20])
+            axes_ba.set_xlabel('t (ms)')
         else:
             rows = len(self.dend_record_list)//p.dends_per_plot
             if (len(self.dend_record_list) % p.dends_per_plot) == 0:
@@ -2385,30 +2407,30 @@ class Plasticity_Experiment(e.Experiment):
         elif self.exptype == 'mod_hetero_nfbp':
             syntype = 'adaptive_meta_hetero_NMDA'
         synlist = self.get_synapse_list(syntype, clustered_flag = True)
-        # for s in synlist:
-        #     dend = self.extract_number_from_string(s.sec.name())
-        #     s.obj.thresh_LTP = p.threshs_LTP[p.independent_dends.index(dend)]
-        #     s.obj.thresh_LTD = p.threshs_LTD[p.independent_dends.index(dend)]
-        for tp, td, s in zip(self.lthresh_LTP_init, self.thresh_LTD_init, synlist):
-            max_LTP.append(np.max(tp.to_python()[0:(p.first_training_input_start + 2*p.session_length)*10]))
-            max_LTD.append(np.max(td.to_python()[0:(p.first_training_input_start + 4*p.session_length)*10]))
-
-        mLTP = np.max(max_LTP)
-        mLTD = np.max(max_LTD)
-        for ml, md, s in zip(max_LTP, max_LTD, synlist):
+        for s in synlist:
             dend = self.extract_number_from_string(s.sec.name())
-            if ml == mLTP or md == mLTD:
-                factor = 0.0
-            else:
-                factor = p.threshold_buffer
-            s.obj.thresh_LTP = (1 + factor) * ml/mLTP * p.threshs_LTP[p.independent_dends.index(dend)]
-            s.obj.thresh_LTD = (1 + factor) * md/mLTD * p.threshs_LTD[p.independent_dends.index(dend)]
-        # print("\nTHE PRESET THRESHOLDS ARE:")
-        # for s in synlist:
-        #     print(s.sec.name(), s.obj.thresh_LTP, s.obj.thresh_LTD)
-        for tp, td in zip(self.lthresh_LTP_init, self.thresh_LTD_init):
-            tp = h.Vector()
-            td = h.Vector()
+            s.obj.thresh_LTP = p.threshs_LTP[p.independent_dends.index(dend)]
+            s.obj.thresh_LTD = p.threshs_LTD[p.independent_dends.index(dend)]
+        # for tp, td, s in zip(self.lthresh_LTP_init, self.thresh_LTD_init, synlist):
+        #     max_LTP.append(np.max(tp.to_python()[0:(p.first_training_input_start + 2*p.session_length)*10]))
+        #     max_LTD.append(np.max(td.to_python()[0:(p.first_training_input_start + 4*p.session_length)*10]))
+        #
+        # mLTP = np.max(max_LTP)
+        # mLTD = np.max(max_LTD)
+        # for ml, md, s in zip(max_LTP, max_LTD, synlist):
+        #     dend = self.extract_number_from_string(s.sec.name())
+        #     if ml == mLTP or md == mLTD:
+        #         factor = 0.0
+        #     else:
+        #         factor = p.threshold_buffer
+        #     s.obj.thresh_LTP = (1 + factor) * ml/mLTP * p.threshs_LTP[p.independent_dends.index(dend)]
+        #     s.obj.thresh_LTD = (1 + factor) * md/mLTD * p.threshs_LTD[p.independent_dends.index(dend)]
+        # # print("\nTHE PRESET THRESHOLDS ARE:")
+        # # for s in synlist:
+        # #     print(s.sec.name(), s.obj.thresh_LTP, s.obj.thresh_LTD)
+        # for tp, td in zip(self.lthresh_LTP_init, self.thresh_LTD_init):
+        #     tp = h.Vector()
+        #     td = h.Vector()
 
     def seti_reset_calcium(self, xor_input_times):
         times = []

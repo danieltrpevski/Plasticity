@@ -117,7 +117,7 @@ INITIAL {
 	Rinf = Cmax*Alpha / (Cmax*Alpha + Beta)
 	Rtau = 1 / (Cmax*Alpha + Beta)
 	synon = 0
-	Cdur	= Cdur_init + weight*Cdur_factor	: transmitter duration (rising phase)
+	Cdur	= Cdur_init + Cdur_factor	: transmitter duration (rising phase)
 }
 
 BREAKPOINT {
@@ -128,7 +128,7 @@ BREAKPOINT {
         ica = nmda_ca_fraction*iNMDA
         :ica = nmda_ca_fraction * g * ghk(v, cai, cao)
         iNMDA = (1 - nmda_ca_fraction)*iNMDA
-	Cdur = Cdur_init + weight*Cdur_factor
+	Cdur = Cdur_init + Cdur_factor
 }
 
 DERIVATIVE release {

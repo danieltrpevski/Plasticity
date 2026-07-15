@@ -72,7 +72,7 @@ NEURON {
         RANGE delta_t, tlast
 	RANGE thresh_LTP, thresh_LTD, learning_rate, w0, wmax, wmin, weight
 	RANGE learning_rate_w_LTP, learning_rate_w_LTD, thresh_LTP_min, thresh_LTP_0, learning_rate_thresh_LTP, thresh_LTD_min, thresh_LTD_0, learning_rate_thresh_LTD, LTD_thresh_factor, hthresh_LTP
-	RANGE ca_nmdai_max, cali_max, active_syn_flag, Cdur_init, Cdur_factor, last_dopamine
+	RANGE ca_nmdai_max, cali_max, active_syn_flag, last_dopamine
 	USEION ca READ cai, cao WRITE ica	
 	USEION cal READ cali VALENCE 2
 

@@ -11,7 +11,7 @@ results_directory = './results'
 #      1. General recording and simulation parameters       #
 #-----------------------------------------------------------#
 step = 20.0
-record_step = 10
+record_step = 1
 record_step_v = 1
 record_step_PDC = 1000
 skip_first_x_ms = 100
@@ -34,9 +34,9 @@ isyn_tau = 6
 isyn_plateau_tau = 10
 e_esyn = 0
 e_gaba = -60
-erev_NMDA = 15
-erate = 1.2
-irate = 1.2
+erev_NMDA = 0
+erate = 1.5
+irate = 1.5
 pos = 0.05
 # NMDA parameters
 
@@ -61,7 +61,7 @@ gGABAmax_plateau = 1.5e-3
 nmda_ampa_ratio = gNMDAmax_plateau/gAMPAmax_plateau
 ratio_glutamate_syn = 1.0
 ratio_distributed_synapses = 0.2
-nmda_ca_fraction = 0.175
+nmda_ca_fraction = 0.159
 
 gmaxAMPA_spillover = 1.5e-3
 gmaxNMDA_spillover = 2.5e-3
@@ -79,7 +79,7 @@ Cdur = 1.1
 Cdur_pf = 50
 eCdur_init = 50
 eCdur_factor = 200
-eCdur = eCdur_init + eCdur_factor*weight
+eCdur = eCdur_init + eCdur_factor
 width = 0.05
 delay_exnmda = 5
 random_initial_weights = True
@@ -201,9 +201,9 @@ reward_length = 50
 session_length = 600
 test_set_size_per_group = 1
 test_set_size = test_set_size_per_group*4
-num_modulated_patterns = num_different_stimuli*20
-weight_modulation = 0.03
-threshold_buffer = 0.2
+num_modulated_patterns = 0#num_different_stimuli*20
+weight_modulation = 0.0
+threshold_buffer = 0.4
 cal12_modulation = 0.9e-6
 cal13_modulation = 0.225e-6
 
@@ -214,7 +214,7 @@ LTP_factor = 2.0
 LTD_factor = 0.01
 thresh_LTP = 0.0004
 thresh_LTD = 0.0001
-hthresh_LTP = 0.04
+hthresh_LTP = 0.035
 thresh_LTP_min = 0.0004
 thresh_LTD_min = 0.0001
 LTD_thresh_factor = 1.0
@@ -243,7 +243,7 @@ n_LTD_pf = 1000
 random_weights = False
 read_input_config_from_file = False
 input_config_file = 'xor_inputs_to_dends.dat'#'xor_dense.dat'
-input_dends = [3, 15] #[3, 5, 8, 12, 15, 22, 26, 35, 41, 47, 53, 57]#
+input_dends = [5, 15] #[3, 5, 8, 12, 15, 22, 26, 35, 41, 47, 53, 57]#
 id0 = [3, 5, 8, 12, 15, 22, 26, 18]
 id1 = [3, 5, 8, 12, 15, 22, 26, 52]
 id2 = [3, 5, 8, 12, 15, 22, 26, 52]
@@ -324,24 +324,24 @@ fig_height = 2.0 # 3.5
 
 max_ca_first_elem = 0
 max_ca_step = 50
-max_ca_step_LTD = 1#20
-max_ca_step_LTP = 1#00
+max_ca_step_LTD = 10#20
+max_ca_step_LTP = 10#00
 
 ymin_thresh_LTP = 0
-ymax_thresh_LTP = 5.2
-tick_thresh_LTP = 5
+ymax_thresh_LTP = 3
+tick_thresh_LTP = 3
 
-ymin_thresh_LTD = -0.2
-ymax_thresh_LTD = 2.1
-tick_thresh_LTD = 2
+ymin_thresh_LTD = 0
+ymax_thresh_LTD = 1
+tick_thresh_LTD = 1
 
 syn_red = 0
 syn_strawberry = 15
 syn_yellow = 35
 
 ymin_thresh_LTP_clus = -2
-ymax_thresh_LTP_clus = 82
-tick_thresh_LTP_clus = 80
+ymax_thresh_LTP_clus = 40
+tick_thresh_LTP_clus = 40
 
 ymin_thresh_LTD_clus = -0.5
 ymax_thresh_LTD_clus = 21
