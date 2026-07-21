@@ -35,8 +35,8 @@ isyn_plateau_tau = 10
 e_esyn = 0
 e_gaba = -60
 erev_NMDA = 0
-erate = 1.5
-irate = 1.5
+erate = 1.6
+irate = 1.6
 pos = 0.05
 # NMDA parameters
 
@@ -340,12 +340,12 @@ syn_strawberry = 15
 syn_yellow = 35
 
 ymin_thresh_LTP_clus = -2
-ymax_thresh_LTP_clus = 40
-tick_thresh_LTP_clus = 40
+ymax_thresh_LTP_clus = 50
+tick_thresh_LTP_clus = 50
 
 ymin_thresh_LTD_clus = -0.5
-ymax_thresh_LTD_clus = 21
-tick_thresh_LTD_clus = 20
+ymax_thresh_LTD_clus = 17
+tick_thresh_LTD_clus = 15
 
 ymin_w = 0
 ymax_w = 200

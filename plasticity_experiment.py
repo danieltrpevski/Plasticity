@@ -911,13 +911,13 @@ class Plasticity_Experiment(e.Experiment):
             end = int(p.num_different_stimuli*multiplier+p.first_training_input_start*p.nrn_dots_per_1ms)
 
             axes.plot(self.tv, self.vs)
-            axes.set_ylabel('v$_{\mathrm{soma}}$ (mV)')
+            axes.set_ylabel(r'v$_{\mathrm{soma}}$ (mV)')
             axes.set_yticks([-80, 20])
             axes.set_xlabel('t (ms)')
 
             axes_ba.plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[start:end], color = 'gray')
             axes_ba.plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
-            axes_ba.set_ylabel('v$_{\mathrm{soma}}$ (mV)')
+            axes_ba.set_ylabel(r'v$_{\mathrm{soma}}$ (mV)')
             axes_ba.set_yticks([-80, 20])
             axes_ba.set_xlabel('t (ms)')
 
@@ -933,18 +933,18 @@ class Plasticity_Experiment(e.Experiment):
             axes_ba[0].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vdlist[0].to_python()[-p.num_different_stimuli*multiplier:], color = 'black');
 
             axes[0].set_yticks([-80, -20])
-            axes[0].set_ylabel('v$_{\mathrm{d%d}}$ (mV)' % 1)
-            axes_ba[0].set_ylabel('v$_{\mathrm{d%d}}$ (mV)' % 1)
+            axes[0].set_ylabel(r'v$_{\mathrm{d%d}}$ (mV)' % 1)
+            axes_ba[0].set_ylabel(r'v$_{\mathrm{d%d}}$ (mV)' % 1)
             axes_ba[0].set_yticks([-80, -20])
 
             axes[-1].plot(self.tv, self.vs)
-            axes[-1].set_ylabel('v$_{\mathrm{soma}}$ (mV)')
+            axes[-1].set_ylabel(r'v$_{\mathrm{soma}}$ (mV)')
             axes[-1].set_yticks([-80, 20])
             axes[-1].set_xlabel('t (ms)')
 
             axes_ba[-1].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[start:end], color = 'gray')
             axes_ba[-1].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
-            axes_ba[-1].set_ylabel('v$_{\mathrm{soma}}$')
+            axes_ba[-1].set_ylabel(r'v$_{\mathrm{soma}}$')
             axes_ba[-1].set_yticks([-80, 20])
             axes_ba[-1].set_xlabel('t (ms)')
         elif self.exptype == 'xor_hom_spillover' and p.connectivity == 'random':
@@ -956,13 +956,13 @@ class Plasticity_Experiment(e.Experiment):
             end = int(p.num_different_stimuli*multiplier+p.first_training_input_start*p.nrn_dots_per_1ms)
 
             axes.plot(self.tv, self.vs)
-            axes.set_ylabel('v$_{\mathrm{soma}}$ (mV)')
+            axes.set_ylabel(r'v$_{\mathrm{soma}}$ (mV)')
             axes.set_yticks([-80, 20])
             axes.set_xlabel('t (ms)')
 
             axes_ba.plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[start:end], color = 'gray')
             axes_ba.plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
-            axes_ba.set_ylabel('v$_{\mathrm{soma}}$ (mV)')
+            axes_ba.set_ylabel(r'v$_{\mathrm{soma}}$ (mV)')
             axes_ba.set_yticks([-80, 20])
             axes_ba.set_xlabel('t (ms)')
         else:
@@ -1001,14 +1001,14 @@ class Plasticity_Experiment(e.Experiment):
                         legends.append(['Dend %d' % (i+1)] )
 
             for i in range(0,rows-1):
-                axes[i].set_ylabel('v$_{\mathrm{d%d}}$ (mV)' % (i+1))
+                axes[i].set_ylabel(r'v$_{\mathrm{d%d}}$ (mV)' % (i+1))
                 axes[i].set_yticks([-80, -20])
                 axes[i].set_xlabel('t (ms)')
                 axes[i].legend(legends[i], frameon = False)
                 if i == 0:
-                    ylabel = 'v$_{\mathrm{d%d}}$ (mV)' % (i+1)
+                    ylabel = r'v$_{\mathrm{d%d}}$ (mV)' % (i+1)
                 else:
-                    ylabel = 'v$_{\mathrm{d%d}}$' % (i+1)
+                    ylabel = r'v$_{\mathrm{d%d}}$' % (i+1)
                 axes_ba[i].set_ylabel(ylabel)
                 axes_ba[i].set_yticks([-80, -20])
                 # axes_ba[i].set_xlabel('t (ms)')
@@ -1020,12 +1020,12 @@ class Plasticity_Experiment(e.Experiment):
 
             plot_num += 1;
             axes[-1].plot(self.tv, self.vs)
-            axes[-1].set_ylabel('v$_{\mathrm{soma}}$ (mV)')
+            axes[-1].set_ylabel(r'v$_{\mathrm{soma}}$ (mV)')
             axes[-1].set_yticks([-80, 20])
             axes[-1].set_xlabel('t (ms)')
             axes_ba[-1].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[start:end], color = 'gray')
             axes_ba[-1].plot(self.tv.to_python()[0:p.num_different_stimuli*multiplier], self.vs.to_python()[-p.num_different_stimuli*multiplier:], color = 'black')
-            axes_ba[-1].set_ylabel('v$_{\mathrm{soma}}$')
+            axes_ba[-1].set_ylabel(r'v$_{\mathrm{soma}}$')
             axes_ba[-1].set_yticks([-80, 20])
             axes_ba[-1].set_xlabel('t (ms)')
 
@@ -1423,11 +1423,11 @@ class Plasticity_Experiment(e.Experiment):
             if not p.correlated_distributed_inputs:
                 figs_agh.append(plt.figure())
                 ax_agh.append(figs_agh[-1].add_subplot(111))
-                ax_agh[-1].set_xlabel('t'); ax_agh[-1].set_ylabel('$w_{exc}$ (\% of initial value)');
+                ax_agh[-1].set_xlabel('t'); ax_agh[-1].set_ylabel(r'$w_{exc}$ (\% of initial value)');
 
                 colormap = plt.cm.viridis; cmax = self.cell.max_dist()
                 scalar_map = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=0, vmax=cmax))
-                plt.colorbar(scalar_map, label='Distance ($\mathrm{\mu}$m)')
+                plt.colorbar(scalar_map, label=r'Distance ($\mathrm{\mu}$m)')
 
                 figs_cali_agh.append(plt.figure())
                 ax_cali_agh.append(figs_cali_agh[-1].add_subplot(111))
@@ -1435,7 +1435,7 @@ class Plasticity_Experiment(e.Experiment):
 
                 colormap = plt.cm.viridis; cmax = self.cell.max_dist()
                 scalar_map = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=0, vmax=cmax))
-                plt.colorbar(scalar_map, label='Distance ($\mathrm{\mu}$m)')
+                plt.colorbar(scalar_map, label=r'Distance ($\mathrm{\mu}$m)')
 
                 figs_cai_agh.append(plt.figure())
                 ax_cai_agh.append(figs_cai_agh[-1].add_subplot(111))
@@ -1443,25 +1443,25 @@ class Plasticity_Experiment(e.Experiment):
 
                 colormap = plt.cm.viridis; cmax = self.cell.max_dist()
                 scalar_map = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=0, vmax=cmax))
-                plt.colorbar(scalar_map, label='Distance ($\mathrm{\mu}$m)')
+                plt.colorbar(scalar_map, label=r'Distance ($\mathrm{\mu}$m)')
 
                 figs_lthresh_LTP_agh.append(plt.figure())
                 ax_lthresh_LTP_agh.append(figs_lthresh_LTP_agh[-1].add_subplot(111))
                 ax_lthresh_LTP_agh[-1].set_xlabel('t');
-                ax_lthresh_LTP_agh[-1].set_ylabel('$\mathrm{\\theta}_\mathrm{LTP}$ ($\mathrm{\mu}$M)');
+                ax_lthresh_LTP_agh[-1].set_ylabel(r'$\mathrm{\theta}_\mathrm{LTP}$ ($\mathrm{\mu}$M)');
 
                 colormap = plt.cm.viridis; cmax = self.cell.max_dist()
                 scalar_map = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=0, vmax=cmax))
-                plt.colorbar(scalar_map, label='Distance ($\mathrm{\mu}$m)')
+                plt.colorbar(scalar_map, label=r'Distance ($\mathrm{\mu}$m)')
 
                 figs_lthresh_LTD_agh.append(plt.figure())
                 ax_lthresh_LTD_agh.append(figs_lthresh_LTD_agh[-1].add_subplot(111))
                 ax_lthresh_LTD_agh[-1].set_xlabel('t');
-                ax_lthresh_LTD_agh[-1].set_ylabel('$\mathrm{\\theta}_\mathrm{LTD}$ ($\mathrm{\mu}$M)');
+                ax_lthresh_LTD_agh[-1].set_ylabel(r'$\mathrm{\theta}_\mathrm{LTD}$ ($\mathrm{\mu}$M)');
 
                 colormap = plt.cm.viridis; cmax = self.cell.max_dist()
                 scalar_map = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=0, vmax=cmax))
-                plt.colorbar(scalar_map, label='Distance ($\mathrm{\mu}$m)')
+                plt.colorbar(scalar_map, label=r'Distance ($\mathrm{\mu}$m)')
 #
                 # figs_cai_nmda_agh.append(plt.figure())
                 # ax_cai_nmda_agh.append(figs_cai_nmda_agh[-1].add_subplot(111))
@@ -1477,7 +1477,7 @@ class Plasticity_Experiment(e.Experiment):
 
                 colormap = plt.cm.viridis; cmax = self.cell.max_dist()
                 scalar_map = plt.cm.ScalarMappable(cmap=colormap, norm=plt.Normalize(vmin=0, vmax=cmax))
-                plt.colorbar(scalar_map, label='Distance ($\mathrm{\mu}$m)')
+                plt.colorbar(scalar_map, label=r'Distance ($\mathrm{\mu}$m)')
 
                 if p.connectivity == 'random':
                     sa = self.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
@@ -1736,12 +1736,12 @@ class Plasticity_Experiment(e.Experiment):
             ylimu = yval.max()#p.gNMDAmax_plateau*p.scale_conductance
         elif plot_what == 'theta_inh':
             yval = np.asarray([np.asarray(s.ref_var_theta_inh.to_python()) for s in l])
-            ylabel = ' $\\theta_{inh}$'
+            ylabel = r'$\theta_{inh}$'
             yliml = yval.min()#p.gNMDAmax_plateau*p.scale_conductance
             ylimu = yval.max()#p.gNMDAmax_plateau*p.scale_conductance
         elif plot_what == 'theta_min_inh':
             yval = np.asarray([np.asarray(s.ref_var_theta_min_inh.to_python()) for s in l])
-            ylabel = ' $\\theta_{inh}$'
+            ylabel = r'$\theta_{inh}$'
             yliml = yval.min()#p.gNMDAmax_plateau*p.scale_conductance
             ylimu = yval.max()#p.gNMDAmax_plateau*p.scale_conductance
         elif plot_what == 'ca_nmda':
@@ -1782,25 +1782,25 @@ class Plasticity_Experiment(e.Experiment):
         elif plot_what == 'thresh_LTP':
             yval = [s.ref_var_lthresh_LTP for s in l]
             yval = np.multiply(yval, 1000)
-            ylabel = '$\mathrm{\\theta}_\mathrm{LTP}$ ($\mathrm{\mu}$M)'
+            ylabel = r'$\mathrm{\theta}_\mathrm{LTP}$ ($\mathrm{\mu}$M)'
 #           # ylimu = p.thresh_LTP_max
             # yliml = p.thresh_LTP_min
         elif plot_what == 'thresh_LTD':
             yval = [s.ref_var_lthresh_LTD for s in l]
             yval = np.multiply(yval, 1000)
-            ylabel = '$\mathrm{\\theta}_\mathrm{LTD}$ ($\mathrm{\mu}$M)'
+            ylabel = r'$\mathrm{\theta}_\mathrm{LTD}$ ($\mathrm{\mu}$M)'
             # ylimu = p.thresh_LTD_max
 #            yliml = p.thresh_LTD_min
         elif plot_what == 'lthresh_LTP':
             yval = [s.ref_var_lthresh_LTP for s in l]
             yval = np.multiply(yval, 1000)
-            ylabel = '$\mathrm{\\theta}_\mathrm{LTP}$ ($\mathrm{\mu}$M)'
+            ylabel = r'$\mathrm{\theta}_\mathrm{LTP}$ ($\mathrm{\mu}$M)'
 #            ylimu = p.thresh_LTP_max
 #            yliml = p.thresh_LTP_min
         elif plot_what == 'hthresh_LTP':
             yval = [s.ref_var_hthresh_LTP for s in l]
             yval = np.multiply(yval, 1000)
-            ylabel = '$\mathrm{\Theta}_\mathrm{LTP}$ ($\mathrm{\mu}$M)'
+            ylabel = r'$\mathrm{\Theta}_\mathrm{LTP}$ ($\mathrm{\mu}$M)'
 #            ylimu = p.thresh_LTP_max
 #            yliml = p.thresh_LTP_min
         elif plot_what == 'kernel':
@@ -1865,8 +1865,8 @@ class Plasticity_Experiment(e.Experiment):
                 axess[-1].set_ylim(p.ymin_thresh_LTD, p.ymax_thresh_LTD)
 
         elif p.connectivity == 'clustered':
-            r = [si for s in l for si in re.findall("\[\d+\]", s.sec.name()) ]
-            r = [ int(num) for elem in r for num in re.findall("\d+", elem)]
+            r = [si for s in l for si in re.findall(r"\[\d+\]", s.sec.name()) ]
+            r = [ int(num) for elem in r for num in re.findall(r"\d+", elem)]
 
             for i in range(0,len(l)):
                 if i==0 or (r[i] != r[i-1]):
@@ -2103,8 +2103,8 @@ class Plasticity_Experiment(e.Experiment):
                     self.synlist_agh = self.get_synapse_list('adaptive_glutamate_cshom', clustered_flag = False)
                     self.synlist = self.synlist_a
 
-                r = [si for s in self.synlist for si in re.findall("\[\d+\]", s.sec.name()) ]
-                r = [ int(num) for elem in r for num in re.findall("\d+", elem)]
+                r = [si for s in self.synlist for si in re.findall(r"\[\d+\]", s.sec.name()) ]
+                r = [ int(num) for elem in r for num in re.findall(r"\d+", elem)]
                 print("Len of synlist is %d." % len(self.synlist))
                 syns_ampa = []
                 syns_nmda = []
@@ -2144,8 +2144,8 @@ class Plasticity_Experiment(e.Experiment):
 #                self.dendstatobj.syns_nmda_e[p.input_dends.index(r[i])].append(syns_nmda_e)
 
                 for s in self.distributed_input_synlist:
-                    dend = re.findall("\[\d+\]", s.sec.name())
-                    dend = re.findall("\d+", dend[0])
+                    dend = re.findall(r"\[\d+\]", s.sec.name())
+                    dend = re.findall(r"\d+", dend[0])
                     dend = int(dend[0])
                     if p.adaptive_distributed_inputs:
 #                        ampa = s.ref_var_ampa[-1]

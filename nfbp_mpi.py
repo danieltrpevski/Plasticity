@@ -53,7 +53,7 @@ weights_agh = []
 if rank == 0:
     # 2. Create tasks for the queue of tasks for parallel execution
     tasks = []
-    trials = 7
+    trials = 1
     for c in all_combinations:
         for trial in range(1, trials + 1):
               tasks.append([c, trial])
@@ -82,14 +82,13 @@ for t in tasks:
     ex = pe.Plasticity_Experiment('xor_hom_spillover', cell, dendstatobj = dendstatobj)
     ex.set_up_experiment()
     ex.set_up_recording(input_dends)
-    ex.cell.print_diffusion()
     ex.simulate()
 
     synlist = ex.get_synapse_list('adaptive_hom_NMDA', clustered_flag = True)
     weights.append([s.ref_var_nmda.to_python() for s in synlist])
     lthresh_LTP.append([s.ref_var_lthresh_LTP.to_python() for s in synlist])
-    error.append(ex.error(window = 20)[-1])
-    dopamine.append(ex.dopamine_vec.to_python())
+    error.append(ex.error(window = p.window_error)[-1])
+    dopamine.append(ex.dopamine_vec)
     synlist_agh = ex.get_synapse_list('adaptive_hom_NMDA', clustered_flag = False)
     weights_agh.append([s.obj.weight for s in synlist_agh])
 
@@ -117,5 +116,5 @@ if rank == 0:
                 't': ex.t.to_python()
                }
     to_save = json.dumps(res_dict)
-    with open('./results/nfbp_wmax_1_4.dat', 'w', encoding = 'utf-8') as f:
+    with open('./results/nfbp_test.dat', 'w', encoding = 'utf-8') as f:
         json.dump(to_save, f)
