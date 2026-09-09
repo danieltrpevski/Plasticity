@@ -22,8 +22,7 @@ cell_ID = 34
 variables = model_sets[cell_ID]['variables']
 cell = msn.MSN(variables = variables)
 #cell = iMSN.iMSN(variables = variables)
-for d in p.input_dends:
-    cell.dendlist[d].nseg *=5
+cell.increase_dend_res(p.independent_dends, 5)
 
 for sec in cell.dendlist:
     print(sec.name(), "%f, %f, %f, d = %.2f" % (h.distance(1, sec = sec),

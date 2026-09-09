@@ -20,7 +20,7 @@ def ferror(vector, window):
 sns.set(font_scale = 2.0)
 sns.set_style("ticks")
 
-filename = './results/metaplasticity/fbp.dat'
+filename = './results/metaplasticity/Erev_NMDA_0/fbp_dist_st.dat'
 with open(filename, 'r', encoding = 'utf-8') as f:
     fload  = json.load(f)
     res_dict = json.loads(fload)
@@ -30,8 +30,8 @@ error = res_dict['error']
 verror = res_dict['verror']
 tw = res_dict['tw']
 trials = res_dict['trials']
-thresh_LTP = res_dict['thresh_LTP']
-thresh_LTD = res_dict['thresh_LTD']
+# thresh_LTP = res_dict['thresh_LTP']
+# thresh_LTD = res_dict['thresh_LTD']
 num_syns_per_feature = int(len(weights[0])/3)
 tw = np.asarray(tw)*1e-3
 
@@ -65,42 +65,66 @@ axet.set_xticks([0,int(xlim/2),xlim])
 axet.set_ylabel('Score (%)')
 axet.set_ylim(0,105);
 axet.set_yticks([0, 50,100]);
+#
+# filename = './results/metaplasticity/Erev_NMDA_0/fbp_rl_etam4.dat'
+# with open(filename, 'r', encoding = 'utf-8') as f:
+#     fload  = json.load(f)
+#     res_dict = json.loads(fload)
+#
+# weights = res_dict['weights']
+# error = res_dict['error']
+# verror = res_dict['verror']
+# tw = res_dict['tw']
+# trials = res_dict['trials']
+# thresh_LTP = res_dict['thresh_LTP']
+# thresh_LTD = res_dict['thresh_LTD']
+# num_syns_per_feature = int(len(weights[0])/3)
+# tw = np.asarray(tw)*1e-3
+# num_stimuli = len(verror[0])
+#
+# color = '#937860'
+# er = np.reshape(error, (trials, int(num_stimuli/20)))
+# er =  (1 - er)*100
+# me1 = np.mean(er, axis = (0)); se1 = np.std(er, axis = (0))
+# axet.plot(x_values, me1, color = color)
+# axet.fill_between(x_values, me1 - se1, me1 + se1, color=color, alpha = 0.5)
+
 plt.show()
 
-r = ['r', 's', 'y']
-for i in range(0, trials):
-    print(error[i])
-    j = 0
-
-    fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(6, 10), sharex=True)
-
-    for feature in r:
-        if feature == 'r':
-            color = '#be0119'# 'red'
-        elif feature == 'y':
-            color = '#fec615' #'yellow'
-        elif feature == 's':
-            color = '#fc5a50'# 'darkred'
-        elif feature == 'b':
-            color = '#b79400' # 'darkyellow'
-        for p in np.arange(num_syns_per_feature*j, num_syns_per_feature*(j+1), 1):
-            ax[0].plot(tw, weights[i][p], color = color)
-            ax[1].plot(tw, thresh_LTP[i][p], color = color)
-            ax[2].plot(tw, thresh_LTD[i][p], color = color)
-        j = j+1
-    ax[2].set_xlabel('t'); #axt.set_xlabel('t')
-    ax[0].set_ylabel('weights'); #axt.set_ylabel('threshold')
-    ax[1].set_ylabel('$\theta_{LTP}$'); #axt.set_ylabel('threshold')
-    ax[2].set_ylabel('$\theta_{LTD}$'); #axt.set_ylabel('threshold')
-
-
-    figp = plt.figure()
-    axp = figp.add_subplot(111)
-    axp.plot(x_values, performance[i])
-    axp.set_xlabel("# of patterns")
-    axp.set_ylabel("Performance (%)")
-
-    plt.show()
+# r = ['r', 's', 'y']
+# for i in range(0, trials):
+#     print(error[i])
+#     j = 0
+#
+#     fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(6, 10), sharex=True)
+#
+#     for feature in r:
+#         if feature == 'r':
+#             color = '#be0119'# 'red'
+#         elif feature == 'y':
+#             color = '#fec615' #'yellow'
+#         elif feature == 's':
+#             color = '#fc5a50'# 'darkred'
+#         elif feature == 'b':
+#             color = '#b79400' # 'darkyellow'
+#         for p in np.arange(num_syns_per_feature*j, num_syns_per_feature*(j+1), 1):
+#             ax[0].plot(tw, weights[i][p], color = color)
+#             ax[1].plot(tw, thresh_LTP[i][p], color = color)
+#             ax[2].plot(tw, thresh_LTD[i][p], color = color)
+#         j = j+1
+#     ax[2].set_xlabel('t'); #axt.set_xlabel('t')
+#     ax[0].set_ylabel('weights'); #axt.set_ylabel('threshold')
+#     ax[1].set_ylabel('$\theta_{LTP}$'); #axt.set_ylabel('threshold')
+#     ax[2].set_ylabel('$\theta_{LTD}$'); #axt.set_ylabel('threshold')
+#
+#
+#     figp = plt.figure()
+#     axp = figp.add_subplot(111)
+#     axp.plot(x_values, performance[i])
+#     axp.set_xlabel("# of patterns")
+#     axp.set_ylabel("Performance (%)")
+#
+#     plt.show()
 
 # for i, wa in enumerate(weights_agh):
 #     print(error[i])
