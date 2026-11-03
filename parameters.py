@@ -12,14 +12,14 @@ results_directory = './results'
 #-----------------------------------------------------------#
 step = 20.0
 record_step = 1
-record_step_v = 1
+record_step_v = 0.1
 record_step_PDC = 1000
-skip_first_x_ms = 100
+skip_first_x_ms = 200
 
 nrn_dots_per_1ms = 1.0/record_step_v
 time_to_avg_over = 20 # in seconds
 
-simtime = 700
+simtime = 2000
 training_mode = 'sub'
 connectivity = 'clustered'
 rnd_exptype = 'no_spillover'
@@ -277,7 +277,7 @@ distal_dends = [2, 3, 4, 5, 8, 9, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 24, 26
 segment_length = 20
 
 # simtime = 1200
-simtime = first_training_input_start + (training_set_size+extra_training_inputs)*session_length
+# simtime = first_training_input_start + (training_set_size+extra_training_inputs)*session_length
 #simtime = first_training_input_start + test_set_size*session_length
 #simtime = first_training_input_start + training_set_size*(training_input_length+
 #            time_to_reward + reward_length)
