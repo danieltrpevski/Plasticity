@@ -28,15 +28,15 @@ cell_index = 34
 variables = model_sets[cell_index]['variables']
 cell = msn.MSN(params = params, variables = variables)
 all_dendrites = [i for i in range(0,len(cell.dendlist))]
-cell.increase_dend_res(all_dendrites, 5)
+cell.increase_dend_res(all_dendrites, 1)
 
 # dist_dends = list(set(range(1, len(self.cell.dendlist)-1)) - set([0,1,6,7,11,16,19, 23, 25, 30, 31, 32, 39, 42, 43, 49, 54, 55]))
 #
 #
 # --- 2. Insert stimulation to cell
 
-#independent_dends = [3, 5, 8, 12, 15, 22, 26, 35, 41, 47, 53, 57]
-dend_record_list = p.independent_dends
+#independent_dends = [3, 5, 8, 12, 15, 22, 26, 52]
+dend_record_list = [3, 12, 22] #p.independent_dends
 dend_stim_list = []
 
 ex = pe.Plasticity_Experiment('record_ca', cell)

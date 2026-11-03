@@ -1247,7 +1247,7 @@ class Plasticity_Experiment(e.Experiment):
             ax_vd.set_xlabel('t')
             for i in range(0,len(self.vdlist)):
                 ax_vd.plot(self.tv[start:], self.vdlist[i][start:])
-            # 
+            #
             # fig_m = plt.figure();
             # ax_m = fig_m.add_subplot(111);
             # ax_m.set_ylabel('Intfire m')
@@ -1340,13 +1340,14 @@ class Plasticity_Experiment(e.Experiment):
             #         ax_cali_dend.plot(self.tout[start_tout:], c[start_tout:])
 
 
-            ax_vd.legend(legend_list); ax_cai.legend(legend_list);
-            ax_cali.legend(legend_list); ax_cai_nmda.legend(legend_list);
-            if self.cell.spines != []:
-                ax_cali_dend.legend(legend_list)
+            ax_vd.legend(legend_list);
+            # ax_cai.legend(legend_list);
+            # ax_cali.legend(legend_list); ax_cai_nmda.legend(legend_list);
+            # if self.cell.spines != []:
+            #     ax_cali_dend.legend(legend_list)
 
-            plt.show()
-            return fig_vs, fig_vd, fig_cali, fig_cai_nmda
+            # plt.show()
+            return fig_vs, fig_vd #, fig_cali, fig_cai_nmda
 
         if self.exptype in ['record_i']:
 #            fig_vs = plt.figure()
